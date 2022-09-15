@@ -28,15 +28,14 @@ int main(int argc, char *argv[])
 	args[0] = "/usr/lib64/ccache/gcc";
 	args[argc] = NULL;
 
-	execvp("/usr/lib64/ccache/gcc", args);
+	// execvp("/usr/lib64/ccache/gcc", args);
 
-	return 1;
 
-	iovs = calloc(argc, sizeof(void*));
+	iovs = calloc(argc, sizeof(struct iovec));
 
 	for (int i = 0; i < argc; i++) {
 		iovs[i].iov_base = args[i];
-		iovs[i].iov_len = sizeof(args[i]);
+		iovs[i].iov_len = strlen(args[i]) + 1;
 		iovs_len[i] = iovs[i].iov_len;
 	}
 
@@ -55,6 +54,7 @@ int main(int argc, char *argv[])
 		printf("\n Error : Could not create socket \n");
 		return 1;
 	}
+
 
 	memset(&serv_addr, '0', sizeof(serv_addr));
 
