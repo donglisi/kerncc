@@ -18,6 +18,16 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	struct stat statbuf;
 
+	char *args[argc + 1];
+	for (int i = 0; i < argc; i++) {
+		args[i] = malloc(sizeof(argv[i]));
+		strcpy(args[i], argv[i]);
+	}
+	args[0] = "/usr/bin/gcc";
+	args[argc] = NULL;
+
+	execvp("/usr/bin/gcc", args);
+
 	fd = open("/home/d/linux/Makefile", O_RDONLY);
 	fstat(fd, &statbuf);
 	close(fd);
