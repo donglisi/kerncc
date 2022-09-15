@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
 	iovs = calloc(argc, sizeof(void*));
 
 	for (int i = 0; i < argc; i++) {
-		iovs.iov_base = args[i];
-		iovs.iov_len = sizeof(args[i]);
-		iovs_len[i] = iovs.iov_len;
+		iovs[i].iov_base = args[i];
+		iovs[i].iov_len = sizeof(args[i]);
+		iovs_len[i] = iovs[i].iov_len;
 	}
 
 /*
