@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	args[0] = "/usr/lib64/ccache/gcc";
 	args[argc] = NULL;
 
-	// execvp("/usr/lib64/ccache/gcc", args);
+	// execvp(args[0], args);
 
 
 	iovs = calloc(argc, sizeof(struct iovec));
@@ -73,16 +73,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	write(sockfd, &argc, 4);
+	n = write(sockfd, &argc, 4);
 	write(sockfd, iovs_len, sizeof(int) * argc);
 	writev(sockfd, iovs, argc);
 
+/*
 	fd = open("/home/d/test/process.o", O_CREAT | O_WRONLY, 0644);
 	while ((n = read(sockfd, recvBuff, BUFSIZ)) > 0) {
 		if (write(fd, recvBuff, n) != n)
 			printf("write error %d\n", n);
 	}
 	close(fd);
-
+*/
 	return 0;
 }
