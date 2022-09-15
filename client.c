@@ -11,6 +11,19 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <stdbool.h>
+
+bool check_is_cc(int argc, char **argv)
+{
+	int i;
+
+	for (i = 0; i < argc; i++) {
+		if (!strcmp("-c", argv[i])) {
+			return true;
+		}
+	}
+	return false;
+}
 
 void get_opath(int argc, char **argv, char **opath)
 {
@@ -106,8 +119,12 @@ int main(int argc, char *argv[])
 	fstat(fd, &statbuf);
 	close(fd);
 
+	if(check_is_cc(argc, argv))
+		distcc(argc, argv);
+	else
+		gcc(argc, argv);
+
 	// printf("%9jd\n", statbuf.st_size);
 
-	distcc(argc, argv);
 	return 0;
 }
