@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <sys/uio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -14,7 +15,7 @@ int main(int argc, char *argv[])
 {
 	int listenfd = 0, connfd = 0, fd, n, *iovs_len, iovcnt;
 	struct sockaddr_in serv_addr;
-	char buf[BUFSIZ];
+	char buf[BUFSIZ], **args;
 	struct iovec *iovs;
 
 	char sendBuff[1025];
@@ -37,13 +38,18 @@ int main(int argc, char *argv[])
 
 	while (1) {
 		connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
-		read(listenfd, &iovcnt, 4);
+		read(connfd, &iovcnt, 4);
 		iovs_len = calloc(iovcnt, sizeof(int));
-		iovs = calloc(iovcnt, sizeof(void*));
+		read(connfd, iovs_len, sizeof(int) * iovcnt);
+		iovs = calloc(iovcnt, sizeof(struct iovec));
+		args = calloc(iovcnt + 1, sizeof(void*));
 		for (int i = 0; i < iovcnt; i++) {
-			iovs[i].iov_len = iovs_len[i];
 			iovs[i].iov_base = malloc(iovs_len[i]);
+			iovs[i].iov_len = iovs_len[i];
+			args[i] = iovs[i].iov_base;
 		}
+		readv(connfd, iovs, iovcnt);
+
 		fd = open("/home/d/linux/build/kernel/events/core.o", O_RDONLY);
 		while ((n = read(fd, buf, BUFSIZ)) > 0)
 			if (write(connfd, buf, n) != n)
