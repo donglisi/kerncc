@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/uio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -13,10 +14,11 @@
 
 int main(int argc, char *argv[])
 {
-	int sockfd = 0, n = 0, fd;
+	int sockfd = 0, n = 0, fd, iovcnt;
 	char recvBuff[BUFSIZ];
 	struct sockaddr_in serv_addr;
 	struct stat statbuf;
+	struct iovec *iov;
 
 	char *args[argc + 1];
 	for (int i = 0; i < argc; i++) {
@@ -28,6 +30,9 @@ int main(int argc, char *argv[])
 
 	execvp("/usr/bin/gcc", args);
 
+	iov = calloc(argc + 1, sizeof(void*));
+
+/*
 	fd = open("/home/d/linux/Makefile", O_RDONLY);
 	fstat(fd, &statbuf);
 	close(fd);
@@ -35,10 +40,7 @@ int main(int argc, char *argv[])
 	printf(" %9jd", statbuf.st_size);
 
 	return 0;
-	if (argc != 2) {
-		printf("\n Usage: %s <ip of server> \n", argv[0]);
-		return 1;
-	}
+*/
 
 	memset(recvBuff, '0', sizeof(recvBuff));
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -51,7 +53,7 @@ int main(int argc, char *argv[])
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(5000);
 
-	if (inet_pton(AF_INET, argv[1], &serv_addr.sin_addr) <= 0) {
+	if (inet_pton(AF_INET, "192.168.1.3", &serv_addr.sin_addr) <= 0) {
 		printf("\n inet_pton error occured\n");
 		return 1;
 	}
