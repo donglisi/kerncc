@@ -21,14 +21,16 @@ int main(int argc, char *argv[])
 	struct iovec *iovs;
 
 	char *args[argc + 1];
-	for (int i = 0; i < argc; i++) {
-		args[i] = malloc(sizeof(argv[i]));
+	for (int i = 1; i < argc; i++) {
+		args[i] = malloc(strlen(argv[i]) + 1);
 		strcpy(args[i], argv[i]);
 	}
-	args[0] = "/usr/bin/gcc";
+	args[0] = "/usr/lib64/ccache/gcc";
 	args[argc] = NULL;
 
-	execvp("/usr/bin/gcc", args);
+	execvp("/usr/lib64/ccache/gcc", args);
+
+	return 1;
 
 	iovs = calloc(argc, sizeof(void*));
 
