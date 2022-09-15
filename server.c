@@ -13,10 +13,22 @@
 #include <sys/types.h>
 #include <time.h>
 
+void get_opath(int argc, char **argv, char **opath)
+{
+	int i;
+
+	for (i = 0; i < argc; i++) {
+		if (!strcmp("-o", argv[i])) {
+			*opath = argv[i + 1];
+			return;
+		}
+	}
+}
+
 void *gcc(void *arg)
 {
 	int connfd = *((int *)arg), fd, n, *iovs_len, iovcnt;
-	char buf[BUFSIZ], **args;
+	char buf[BUFSIZ], **args, *opath;
 	struct iovec *iovs;
 	pid_t pid;
 	int wstatus;
@@ -42,13 +54,12 @@ void *gcc(void *arg)
 
 	wait(&wstatus);
 
-/*
-	fd = open("/home/d/linux/build/kernel/events/core.o", O_RDONLY);
+	get_opath(opath);
+	fd = open(opath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
 	close(fd);
-*/
 	close(connfd);
 }
 
