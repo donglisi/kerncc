@@ -54,7 +54,7 @@ void *gcc(void *arg)
 
 	wait(&wstatus);
 
-	get_opath(opath);
+	get_opath(iovcnt, args, &opath);
 	fd = open(opath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
