@@ -22,7 +22,7 @@ void *gcc(void *arg)
 	int wstatus;
 
 	pthread_t t;
-	n = read(connfd, &iovcnt, 4);
+	n = read(connfd, &iovcnt, sizeof(int));
 	iovs_len = calloc(iovcnt, sizeof(int));
 	read(connfd, iovs_len, sizeof(int) * iovcnt);
 	iovs = calloc(iovcnt, sizeof(struct iovec));
@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	pthread_t t;
 
+	chdir("/home/d/linux");
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
