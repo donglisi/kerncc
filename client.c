@@ -13,6 +13,9 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 
+char cc[] = "/usr/bin/gcc";
+// char cc[] = "/usr/lib64/ccache/gcc";
+
 bool check_is_cc(int argc, char **argv)
 {
 	int i;
@@ -45,7 +48,7 @@ void gcc(char argc, char **argv)
 		args[i] = malloc(strlen(argv[i]) + 1);
 		strcpy(args[i], argv[i]);
 	}
-	args[0] = "/usr/lib64/ccache/gcc";
+	args[0] = cc;
 	args[argc] = NULL;
 
 	execvp(args[0], args);
@@ -87,7 +90,7 @@ void distcc(int argc, char **argv)
 
 	sockfd = get_sockfd();
 	iovs = calloc(argc, sizeof(struct iovec));
-	iovs[0].iov_base = "/usr/lib64/ccache/gcc";
+	iovs[0].iov_base = &cc;
 	iovs[0].iov_len = strlen(iovs[0].iov_base) + 1;
 	iovs_len[0] = iovs[0].iov_len;
 	for (i = 1; i < argc; i++) {
