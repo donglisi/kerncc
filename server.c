@@ -12,9 +12,10 @@
 
 int main(int argc, char *argv[])
 {
-	int listenfd = 0, connfd = 0, fd, n;
+	int listenfd = 0, connfd = 0, fd, n, *iovs_len, iovcnt;
 	struct sockaddr_in serv_addr;
 	char buf[BUFSIZ];
+	struct iovec *iovs;
 
 	char sendBuff[1025];
 	time_t ticks;
@@ -36,6 +37,13 @@ int main(int argc, char *argv[])
 
 	while (1) {
 		connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
+		read(listenfd, &iovcnt, 4);
+		iovs_len = calloc(iovcnt, sizeof(int));
+		iovs = calloc(iovcnt, sizeof(void*));
+		for (int i = 0; i < iovcnt; i++) {
+			iovs[i].iov_len = iovs_len[i];
+			iovs[i].iov_base = malloc(iovs_len[i]);
+		}
 		fd = open("/home/d/linux/build/kernel/events/core.o", O_RDONLY);
 		while ((n = read(fd, buf, BUFSIZ)) > 0)
 			if (write(connfd, buf, n) != n)
