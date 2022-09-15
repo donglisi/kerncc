@@ -14,11 +14,11 @@
 
 int main(int argc, char *argv[])
 {
-	int sockfd = 0, n = 0, fd, iovcnt;
+	int sockfd = 0, n = 0, fd, iovs_len[argc];
 	char recvBuff[BUFSIZ];
 	struct sockaddr_in serv_addr;
 	struct stat statbuf;
-	struct iovec *iov;
+	struct iovec *iovs;
 
 	char *args[argc + 1];
 	for (int i = 0; i < argc; i++) {
@@ -30,7 +30,13 @@ int main(int argc, char *argv[])
 
 	execvp("/usr/bin/gcc", args);
 
-	iov = calloc(argc + 1, sizeof(void*));
+	iovs = calloc(argc, sizeof(void*));
+
+	for (int i = 0; i < argc; i++) {
+		iovs.iov_base = args[i];
+		iovs.iov_len = sizeof(args[i]);
+		iovs_len[i] = iovs.iov_len;
+	}
 
 /*
 	fd = open("/home/d/linux/Makefile", O_RDONLY);
@@ -64,6 +70,10 @@ int main(int argc, char *argv[])
 		printf("\n Error : Connect Failed \n");
 		return 1;
 	}
+
+	write(sockfd, &argc, 4);
+	write(sockfd, iovs_len, sizeof(int) * argc);
+	writev(sockfd, iovs, argc);
 
 	fd = open("/home/d/test/process.o", O_CREAT | O_WRONLY, 0644);
 	while ((n = read(sockfd, recvBuff, BUFSIZ)) > 0) {
