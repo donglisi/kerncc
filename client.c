@@ -23,6 +23,9 @@ bool check_is_cc(int argc, char **argv)
 {
 	int i;
 
+	if (!EndsWith(argv[argc - 1], ".c"))
+		return false;
+
 	for (i = 0; i < argc; i++) {
 		if (!strcmp("-c", argv[i])) {
 			return true;
