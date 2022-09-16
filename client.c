@@ -14,6 +14,8 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 
+#include "utils.h"
+
 char cc[] = "/usr/bin/gcc";
 // char cc[] = "/usr/lib64/ccache/gcc";
 
@@ -27,18 +29,6 @@ bool check_is_cc(int argc, char **argv)
 		}
 	}
 	return false;
-}
-
-void get_opath(int argc, char **argv, char **opath)
-{
-	int i;
-
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-o", argv[i])) {
-			*opath = argv[i + 1];
-			return;
-		}
-	}
 }
 
 void gcc(char argc, char **argv)
@@ -116,14 +106,8 @@ void distcc(int argc, char **argv)
 
 bool need_remote_cc(int argc, char **argv)
 {
-	int fd;
-	struct stat statbuf;
-
 	if (check_is_cc(argc, argv)) {
-		fd = open(argv[argc - 1], O_RDONLY);
-		fstat(fd, &statbuf);
-		close(fd);
-		if (statbuf.st_size > 2000) {
+		if (get_file_size(argv[argc - 1]) > 2000) {
 			srand(time(NULL) + getpid());
 			if (rand() % 5 > 1)
 				return true;

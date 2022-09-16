@@ -13,40 +13,11 @@
 #include <sys/types.h>
 #include <time.h>
 
-void get_opath(int argc, char **argv, char **opath)
-{
-	int i;
-
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-o", argv[i])) {
-			*opath = argv[i + 1];
-			return;
-		}
-	}
-}
-
-void get_dpath(int argc, char **argv, char **dpath)
-{
-	int loc;
-	char *opath, *name;
-
-	get_opath(argc, argv, &opath);
-	*dpath = malloc(strlen(opath) + 4);
-	dpath[strlen(opath) + 3] = 0;
-
-	strcpy(*dpath, opath);
-	name = strrchr(opath, '/');
-	loc = strlen(opath) - strlen(name);
-	strcpy(&((*dpath)[loc + 1]), name);
-	(*dpath)[loc] = '/';
-	(*dpath)[loc + 1] = '.';
-	strcpy(&((*dpath)[strlen(opath) + 1]), ".d");
-	printf("%s %d\n", *dpath, loc);
-}
+#include "utils.h"
 
 void *gcc(void *arg)
 {
-	int connfd = *((int *)arg), fd, n, *iovs_len, iovcnt;
+	int connfd = *((int *)arg), fd, n, *iovs_len, iovcnt, size;
 	char buf[BUFSIZ], **args, *opath, *dpath;
 	struct iovec *iovs;
 	pid_t pid;
@@ -72,23 +43,23 @@ void *gcc(void *arg)
 
 	waitpid(pid, &wstatus, 0);
 
+	read(connfd, &size, sizeof(int));
 	get_opath(iovcnt, args, &opath);
 	fd = open(opath, O_RDONLY);
-	while ((n = read(fd, buf, BUFSIZ)) > 0)
+	while ((n = read(fd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+		size -= n;
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
+	}
 	close(fd);
 
-	printf("---------- %s\n", opath);
 	get_dpath(iovcnt, args, &dpath);
-/*
 	fd = open(dpath, O_RDONLY);
+	free(dpath);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
 	close(fd);
-	free(dpath);
-*/
 
 	close(connfd);
 
