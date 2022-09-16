@@ -113,21 +113,27 @@ void distcc(int argc, char **argv)
 	close(fd);
 }
 
-int main(int argc, char *argv[])
+bool need_remote_cc(int argc, char **argv)
 {
 	int fd;
 	struct stat statbuf;
 
-	fd = open("/home/d/linux/Makefile", O_RDONLY);
-	fstat(fd, &statbuf);
-	close(fd);
+	if (check_is_cc(argc, argv)) {
+		fd = open(argv[argc - 1], O_RDONLY);
+		fstat(fd, &statbuf);
+		close(fd);
+		if (statbuf.st_size > 8000)
+			return true;
+	}
 
-	if(check_is_cc(argc, argv))
+	return false;
+}
+
+int main(int argc, char *argv[])
+{
+	if (need_remote_cc(argc, argv))
 		distcc(argc, argv);
 	else
 		gcc(argc, argv);
-
-	// printf("%9jd\n", statbuf.st_size);
-
 	return 0;
 }
