@@ -95,9 +95,8 @@ void distcc(int argc, char **argv)
 	writev(sockfd, iovs, argc);
 
 	get_opath(argc, argv, &opath);
-	size = get_file_size(opath);
-	write(sockfd, &size, sizeof(int));
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
+	read(sockfd, &size, sizeof(int));
 	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
 		size -= n;
 		if (write(fd, buf, n) != n)

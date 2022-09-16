@@ -44,6 +44,8 @@ void *gcc(void *arg)
 	waitpid(pid, &wstatus, 0);
 
 	get_opath(iovcnt, args, &opath);
+	size = get_file_size(opath);
+	write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0) {
 		if (write(connfd, buf, n) != n)
