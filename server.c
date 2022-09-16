@@ -33,7 +33,6 @@ void *gcc(void *arg)
 	pid_t pid;
 	int wstatus;
 
-	pthread_t t;
 	n = read(connfd, &iovcnt, sizeof(int));
 	iovs_len = calloc(iovcnt, sizeof(int));
 	read(connfd, iovs_len, sizeof(int) * iovcnt);
@@ -59,13 +58,22 @@ void *gcc(void *arg)
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
+
 	close(fd);
 	close(connfd);
+
+	for (int i = 0; i < iovcnt; i++) {
+		free(iovs[i].iov_base);
+	}
+	free(args);
+	free(iovs);
+	free(iovs_len);
+	free(arg);
 }
 
 int main(int argc, char *argv[])
 {
-	int listenfd = 0, connfd = 0, option = 1;
+	int listenfd = 0, *connfd, option = 1;
 	struct sockaddr_in serv_addr;
 	pthread_t t;
 
@@ -83,7 +91,8 @@ int main(int argc, char *argv[])
 	listen(listenfd, 10);
 
 	while (1) {
-		connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
-		pthread_create(&t, NULL, gcc, &connfd);
+		connfd = malloc(sizeof(int));
+		*connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
+		pthread_create(&t, NULL, gcc, connfd);
 	}
 }
