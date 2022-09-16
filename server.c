@@ -15,6 +15,16 @@
 
 #include "utils.h"
 
+void print_cmd(char **args)
+{
+	int i;
+	char *arg;
+
+	for (i = 0, arg = args[0]; args[i]; i++)
+		printf("%s ", args[i]);
+	printf("\n");
+}
+
 void *gcc(void *arg)
 {
 	int connfd = *((int *)arg), fd, n, *iovs_len, iovcnt, size;
@@ -37,6 +47,7 @@ void *gcc(void *arg)
 
 	pid = fork();
 
+	print_cmd(args);
 	if (!pid) {
 		execvp(args[0], args);
 	}
