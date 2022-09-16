@@ -26,7 +26,7 @@ bool check_is_cc(int argc, char **argv)
 	if (!EndsWith(argv[argc - 1], ".c"))
 		return false;
 
-	if (strstr(argv[argc - 1], "arch/x86/entry") != NULL)
+	if (strstr(argv[argc - 1], "arch/x86") != NULL)
 		return false;
 
 	for (i = 0; i < argc; i++) {
@@ -110,6 +110,7 @@ void distcc(int argc, char **argv)
 	}
 	close(fd);
 
+/*
 	get_dpath(argc, argv, &dpath);
 	fd = open(dpath, O_CREAT | O_WRONLY, 0644);
 	while ((n = read(sockfd, buf, BUFSIZ)) > 0) {
@@ -117,6 +118,7 @@ void distcc(int argc, char **argv)
 			printf("write error %d\n", n);
 	}
 	close(fd);
+*/
 }
 
 bool need_remote_cc(int argc, char **argv)
