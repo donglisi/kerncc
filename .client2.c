@@ -10,6 +10,7 @@
 #include <sys/uio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <openssl/rand.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
@@ -114,6 +115,22 @@ void distcc(int argc, char **argv)
 	close(fd);
 }
 
+/* Random integer in [0, limit) */
+unsigned int random_uint(unsigned int limit) {
+    union {
+        unsigned int i;
+        unsigned char c[sizeof(unsigned int)];
+    } u;
+
+    do {
+        if (!RAND_bytes(u.c, sizeof(u.c))) {
+            fprintf(stderr, "Can't get random bytes!\n");
+            exit(1);
+        }
+    } while (u.i < (-limit % limit)); /* u.i < (2**size % limit) */
+    return u.i % limit;
+}
+
 bool need_remote_cc(int argc, char **argv)
 {
 	int fd;
@@ -124,8 +141,7 @@ bool need_remote_cc(int argc, char **argv)
 		fstat(fd, &statbuf);
 		close(fd);
 		if (statbuf.st_size > 2000) {
-			srand(time(NULL) + getpid());
-			if (rand() % 5 > 1) {
+			if (random_uint(6) % 5 > 1) {
 				return true;
 			} else {
 				return false;

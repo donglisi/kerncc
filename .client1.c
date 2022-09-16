@@ -116,16 +116,19 @@ void distcc(int argc, char **argv)
 
 bool need_remote_cc(int argc, char **argv)
 {
-	int fd;
+	int fd, rand1;
 	struct stat statbuf;
 
 	if (check_is_cc(argc, argv)) {
 		fd = open(argv[argc - 1], O_RDONLY);
 		fstat(fd, &statbuf);
 		close(fd);
-		if (statbuf.st_size > 2000) {
-			srand(time(NULL) + getpid());
-			if (rand() % 5 > 1) {
+		if (statbuf.st_size > 0) {
+			fd = open("/dev/random", O_RDONLY);
+			read(fd, &rand1, sizeof(int));
+			close(fd);
+			srand(time(NULL) + rand1);
+			if (rand() % 2 == 0) {
 				return true;
 			} else {
 				return false;
