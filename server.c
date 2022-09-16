@@ -30,10 +30,18 @@ void get_dpath(int argc, char **argv, char **dpath)
 	int loc;
 	char *opath, *name;
 
-	opath = get_opath(argc, argv, &opath);
+	get_opath(argc, argv, &opath);
 	*dpath = malloc(strlen(opath) + 4);
+	dpath[strlen(opath) + 3] = 0;
+
+	strcpy(*dpath, opath);
 	name = strrchr(opath, '/');
-	printf("%s\n", name);
+	loc = strlen(opath) - strlen(name);
+	strcpy(&((*dpath)[loc + 1]), name);
+	(*dpath)[loc] = '/';
+	(*dpath)[loc + 1] = '.';
+	strcpy(&((*dpath)[strlen(opath) + 1]), ".d");
+	printf("%s %d\n", *dpath, loc);
 }
 
 void *gcc(void *arg)
@@ -71,13 +79,16 @@ void *gcc(void *arg)
 			printf("write error\n");
 	close(fd);
 
+	printf("---------- %s\n", opath);
 	get_dpath(iovcnt, args, &dpath);
+/*
 	fd = open(dpath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
 	close(fd);
 	free(dpath);
+*/
 
 	close(connfd);
 
