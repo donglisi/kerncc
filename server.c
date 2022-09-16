@@ -51,8 +51,7 @@ void *gcc(void *arg)
 		execvp(args[0], args);
 	}
 
-	wait(&wstatus);
-
+	waitpid(pid, &wstatus, 0);
 	get_opath(iovcnt, args, &opath);
 	fd = open(opath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
@@ -62,9 +61,8 @@ void *gcc(void *arg)
 	close(fd);
 	close(connfd);
 
-	for (int i = 0; i < iovcnt; i++) {
+	for (int i = 0; i < iovcnt; i++)
 		free(iovs[i].iov_base);
-	}
 	free(args);
 	free(iovs);
 	free(iovs_len);
