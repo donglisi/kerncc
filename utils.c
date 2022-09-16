@@ -32,8 +32,8 @@ void get_dpath(int argc, char **argv, char **dpath)
 	char *opath, *name;
 
 	get_opath(argc, argv, &opath);
-	*dpath = malloc(strlen(opath) + 4);
-	dpath[strlen(opath) + 3] = 0;
+	*dpath = malloc(strlen(opath) + 6);
+	dpath[strlen(opath) + 5] = 0;
 
 	strcpy(*dpath, opath);
 	name = strrchr(opath, '/');
@@ -41,7 +41,8 @@ void get_dpath(int argc, char **argv, char **dpath)
 	strcpy(&((*dpath)[loc + 1]), name);
 	(*dpath)[loc] = '/';
 	(*dpath)[loc + 1] = '.';
-	strcpy(&((*dpath)[strlen(opath) + 1]), ".d");
+	strcpy(&((*dpath)[strlen(opath) + 1]), ".cmd");
+	printf("dpath %s\n", *dpath);
 }
 
 int get_file_size(char *path)
