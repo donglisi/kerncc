@@ -25,10 +25,21 @@ void get_opath(int argc, char **argv, char **opath)
 	}
 }
 
+void get_dpath(int argc, char **argv, char **dpath)
+{
+	int loc;
+	char *opath, *name;
+
+	opath = get_opath(argc, argv, &opath);
+	*dpath = malloc(strlen(opath) + 4);
+	name = strrchr(opath, '/');
+	printf("%s\n", name);
+}
+
 void *gcc(void *arg)
 {
 	int connfd = *((int *)arg), fd, n, *iovs_len, iovcnt;
-	char buf[BUFSIZ], **args, *opath;
+	char buf[BUFSIZ], **args, *opath, *dpath;
 	struct iovec *iovs;
 	pid_t pid;
 	int wstatus;
@@ -52,13 +63,22 @@ void *gcc(void *arg)
 	}
 
 	waitpid(pid, &wstatus, 0);
+
 	get_opath(iovcnt, args, &opath);
 	fd = open(opath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
-
 	close(fd);
+
+	get_dpath(iovcnt, args, &dpath);
+	fd = open(dpath, O_RDONLY);
+	while ((n = read(fd, buf, BUFSIZ)) > 0)
+		if (write(connfd, buf, n) != n)
+			printf("write error\n");
+	close(fd);
+	free(dpath);
+
 	close(connfd);
 
 	for (int i = 0; i < iovcnt; i++)

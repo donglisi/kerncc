@@ -125,11 +125,10 @@ bool need_remote_cc(int argc, char **argv)
 		close(fd);
 		if (statbuf.st_size > 2000) {
 			srand(time(NULL) + getpid());
-			if (rand() % 5 > 1) {
+			if (rand() % 5 > 1)
 				return true;
-			} else {
+			else
 				return false;
-			}
 		}
 	}
 
