@@ -43,11 +43,9 @@ void *gcc(void *arg)
 
 	waitpid(pid, &wstatus, 0);
 
-	read(connfd, &size, sizeof(int));
 	get_opath(iovcnt, args, &opath);
 	fd = open(opath, O_RDONLY);
-	while ((n = read(fd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
-		size -= n;
+	while ((n = read(fd, buf, BUFSIZ)) > 0) {
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
 	}

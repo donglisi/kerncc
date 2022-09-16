@@ -75,8 +75,8 @@ int get_sockfd()
 
 void distcc(int argc, char **argv)
 {
-	int sockfd, i, fd, n, iovs_len[argc];
-	char buf[BUFSIZ], *opath;
+	int sockfd, i, fd, n, iovs_len[argc], size;
+	char buf[BUFSIZ], *opath, *dpath;
 	struct iovec *iovs;
 
 	sockfd = get_sockfd();
@@ -95,8 +95,18 @@ void distcc(int argc, char **argv)
 	writev(sockfd, iovs, argc);
 
 	get_opath(argc, argv, &opath);
-
+	size = get_file_size(opath);
+	write(sockfd, &size, sizeof(int));
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
+	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+		size -= n;
+		if (write(fd, buf, n) != n)
+			printf("write error %d\n", n);
+	}
+	close(fd);
+
+	get_dpath(argc, argv, &dpath);
+	fd = open(dpath, O_CREAT | O_WRONLY, 0644);
 	while ((n = read(sockfd, buf, BUFSIZ)) > 0) {
 		if (write(fd, buf, n) != n)
 			printf("write error %d\n", n);
