@@ -1,5 +1,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <libgen.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <sys/uio.h>
@@ -103,39 +104,21 @@ void get_opath(int argc, char **argv, char **opath)
 void get_dpath(int argc, char **argv, char **dpath)
 {
 	int loc;
-	char *opath, *name;
+	char *opath;
 
 	get_opath(argc, argv, &opath);
 	*dpath = malloc(strlen(opath) + 4);
 	dpath[strlen(opath) + 3] = 0;
 
-	strcpy(*dpath, opath);
-	name = strrchr(opath, '/');
-	loc = strlen(opath) - strlen(name);
-	strcpy(&((*dpath)[loc + 1]), name);
-	(*dpath)[loc] = '/';
-	(*dpath)[loc + 1] = '.';
-	strcpy(&((*dpath)[strlen(opath) + 1]), ".d");
-	// printf("dpath %s\n", *dpath);
-}
-
-void get_cmdpath(int argc, char **argv, char **cmdpath)
-{
-	int loc;
-	char *opath, *name;
-
-	get_opath(argc, argv, &opath);
-	*cmdpath = malloc(strlen(opath) + 6);
-	cmdpath[strlen(opath) + 5] = 0;
-
-	strcpy(*cmdpath, opath);
-	name = strrchr(opath, '/');
-	loc = strlen(opath) - strlen(name);
-	strcpy(&((*cmdpath)[loc + 1]), name);
-	(*cmdpath)[loc] = '/';
-	(*cmdpath)[loc + 1] = '.';
-	strcpy(&((*cmdpath)[strlen(opath) + 1]), ".cmd");
-	// printf("cmdpath %s\n", *cmdpath);
+	strcpy(*dpath, dirname(opath));
+	loc = strlen(dirname(opath));
+	strcpy(&((*dpath)[loc]), "/.");
+	loc += 2;
+	strcpy(&((*dpath)[loc]), basename(opath));
+	loc += strlen(basename(opath));
+	strcpy(&((*dpath)[loc]), ".d");
+	loc += 2;
+	(*dpath)[loc] = 0;
 }
 
 int get_file_size(char *path)
