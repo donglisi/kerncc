@@ -17,29 +17,46 @@
 
 void *gcc(void *arg)
 {
-	int connfd = *((int *)arg), fd, n, len, argc;
+	int connfd = *((int *)arg), fd, n, size, argc;
 	char buf[BUFSIZ], *cmd, **args, *opath, *dpath;
 	pid_t pid;
 	int wstatus;
 
 	cmd = read_to_str(connfd);
 	args = get_args(cmd);
-	print_cmd(args);
-
+	// print_cmd(args);
 	argc = get_argc(args);
 
-	return 0;
-
 	pid = fork();
-	if (!pid) {
+	if (!pid)
 		execvp(args[0], args);
-	}
 	waitpid(pid, &wstatus, 0);
 
-	for (int i = 0; i < argc; i++)
+	get_opath(argc, args, &opath);
+	size = get_file_size(opath);
+	write(connfd, &size, sizeof(int));
+	fd = open(opath, O_RDONLY);
+	while ((n = read(fd, buf, BUFSIZ)) > 0) {
+		if (write(connfd, buf, n) != n)
+			printf("write error\n");
+	}
+	close(fd);
+
+	get_dpath(argc, args, &dpath);
+	size = get_file_size(dpath);
+	write(connfd, &size, sizeof(int));
+	fd = open(dpath, O_RDONLY);
+	while ((n = read(fd, buf, BUFSIZ)) > 0)
+		if (write(connfd, buf, n) != n)
+			printf("write error\n");
+	close(fd);
+
+	for (int i = 1; i < argc; i++)
 		free(args[i]);
 	free(args);
+	free(dpath);
 	free(arg);
+	close(connfd);
 }
 
 int main(int argc, char *argv[])
