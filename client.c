@@ -28,16 +28,37 @@ bool check_is_cc(int argc, char **argv)
 	if (argv[argc - 1][0] != '/')
 		return false;
 
-	if (strstr(argv[argc - 1], "arch/x86/boot"))
+	if (strstr(argv[argc - 1], "/arch/x86/boot"))
 		return false;
 
-	if (strstr(argv[argc - 1], "arch/x86/entry"))
+	if (strstr(argv[argc - 1], "/arch/x86/entry"))
 		return false;
 
-	if (strstr(argv[argc - 1], "arch/x86/lib/inat.c"))
+	if (strstr(argv[argc - 1], "/drivers/scsi/"))
 		return false;
 
-	if (strstr(argv[argc - 1], "lib/crc32.c"))
+	if (strstr(argv[argc - 1], "/drivers/gpu/drm/radeon/"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/crypto"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/security/selinux"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/security/keys/trusted-keys/trusted_tpm2.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/kernel/configs.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/arch/x86/lib/inat.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/lib/oid_registry.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/lib/crc"))
 		return false;
 
 	for (i = 0; i < argc; i++) {
