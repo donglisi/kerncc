@@ -25,6 +25,9 @@ bool check_is_cc(int argc, char **argv)
 	if (!EndsWith(argv[argc - 1], ".c"))
 		return false;
 
+	if (argv[argc - 1][0] != '/')
+		return false;
+
 	if (strstr(argv[argc - 1], "arch/x86/boot"))
 		return false;
 
@@ -32,15 +35,6 @@ bool check_is_cc(int argc, char **argv)
 		return false;
 
 	if (strstr(argv[argc - 1], "arch/x86/lib/inat.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "arch/x86/kernel/cpu/capflags.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "drivers/tty/vt/consolemap_deftbl.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "drivers/tty/vt/defkeymap.c"))
 		return false;
 
 	if (strstr(argv[argc - 1], "lib/crc32.c"))
