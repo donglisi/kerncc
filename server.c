@@ -24,7 +24,6 @@ void *gcc(void *arg)
 
 	cmd = read_to_str(connfd);
 	args = get_args(cmd);
-	// print_cmd(args);
 	argc = get_argc(args);
 
 	pid = fork();
@@ -46,6 +45,7 @@ void *gcc(void *arg)
 	size = get_file_size(dpath);
 	write(connfd, &size, sizeof(int));
 	fd = open(dpath, O_RDONLY);
+	free(dpath);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
@@ -54,9 +54,8 @@ void *gcc(void *arg)
 	for (int i = 1; i < argc; i++)
 		free(args[i]);
 	free(args);
-	free(dpath);
-	free(arg);
 	close(connfd);
+	free(arg);
 }
 
 int main(int argc, char *argv[])

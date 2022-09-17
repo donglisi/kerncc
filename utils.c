@@ -60,7 +60,7 @@ char **get_args(char *cmd)
 			argc++;
 	argc++;
 
-	arg_lens = calloc(argc + 1, sizeof(int));
+	arg_lens = calloc(argc, sizeof(int));
 	for (i = 0, j = 0, len = 0 ; i < cmd_len; i++, len++) {
 		if (cmd[i] == ' ') {
 			if (j == 0)
@@ -73,7 +73,7 @@ char **get_args(char *cmd)
 	}
 	arg_lens[j] = len - 1;
 
-	args = calloc(argc, sizeof(void *));
+	args = calloc(argc + 1, sizeof(void *));
 	for (i = 0, loc = 0; i < argc; i++) {
 		len = arg_lens[i];
 		args[i] = malloc(len + 1);
