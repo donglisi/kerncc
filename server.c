@@ -27,14 +27,15 @@ void *gcc(void *arg)
 	args = get_args(cmd);
 	argc = get_argc(args);
 
+	get_opath(argc, args, &opath);
+	dirname1(opath, &dirpath);
+	mkdir_recursion(dirpath);
+
 	pid = fork();
 	if (!pid)
 		execvp(args[0], args);
 	waitpid(pid, &wstatus, 0);
 
-	get_opath(argc, args, &opath);
-	dirname1(opath, &dirpath);
-	mkdir_recursion(dirpath);
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);
@@ -42,6 +43,9 @@ void *gcc(void *arg)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
 	close(fd);
+
+	get_dpath(argc, args, &dpath);
+	printf("dpath %s\n", dpath);
 
 	get_dpath(argc, args, &dpath);
 	size = get_file_size(dpath);
@@ -55,6 +59,7 @@ void *gcc(void *arg)
 
 	for (int i = 1; i < argc; i++)
 		free(args[i]);
+	// free(dirpath);
 	free(args);
 	close(connfd);
 	free(arg);

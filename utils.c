@@ -113,7 +113,7 @@ void get_dpath(int argc, char **argv, char **dpath)
 	basename1(opath, &name);
 
 	*dpath = malloc(strlen(opath) + 4);
-	dpath[strlen(opath) + 3] = 0;
+	(*dpath)[strlen(opath) + 3] = 0;
 	strcpy(*dpath, dirpath);
 	loc = strlen(dirpath);
 	strcpy(&((*dpath)[loc]), "/.");
@@ -232,7 +232,7 @@ char *basename1(char *path, char **name)
 
 	copy = malloc(strlen(path) + 1);
 	strcpy(copy, path);
-	tmp = dirname(copy);
+	tmp = basename(copy);
 	*name = malloc(strlen(tmp) + 1);
 	strcpy(*name, tmp);
 	free(copy);
