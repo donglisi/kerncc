@@ -9,3 +9,4 @@ char *read_to_str(int fd);
 void write_from_str(int fd, char *str);
 void read_to_fd(int infd, int outfd);
 void print_cmd(char **args);
+void mkdir_recursion(char *path);

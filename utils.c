@@ -210,3 +210,16 @@ void print_cmd(char **args)
 		printf("%s ", args[i]);
 	printf("\n");
 }
+
+void mkdir_recursion(char *path)
+{
+	char *cmd, mk[] = "mkdir -p ";
+	int mk_len = strlen(mk), cmd_len = mk_len + strlen(path) + 1;
+
+	cmd = malloc(cmd_len);
+	strcpy(cmd, mk);
+	strcpy(&cmd[mk_len], path);
+	cmd[cmd_len -1 ] = 0;
+	system(cmd);
+	free(cmd);
+}

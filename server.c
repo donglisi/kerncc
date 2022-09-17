@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <libgen.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -32,6 +33,7 @@ void *gcc(void *arg)
 	waitpid(pid, &wstatus, 0);
 
 	get_opath(argc, args, &opath);
+	mkdir_recursion(dirname(opath));
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);
@@ -65,7 +67,7 @@ int main(int argc, char *argv[])
 	pthread_t t;
 
 	pwd = getenv("KBUILD_DIR");
-	if(pwd)
+	if (pwd)
 		chdir(pwd);
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
