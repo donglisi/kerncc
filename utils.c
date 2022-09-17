@@ -114,7 +114,6 @@ void get_dpath(int argc, char **argv, char **dpath)
 
 	*dpath = malloc(strlen(opath) + 4);
 	dpath[strlen(opath) + 3] = 0;
-	dirpath = dirname1(opath);
 	strcpy(*dpath, dirpath);
 	loc = strlen(dirpath);
 	strcpy(&((*dpath)[loc]), "/.");
