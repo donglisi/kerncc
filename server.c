@@ -35,10 +35,9 @@ void *gcc(void *arg)
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);
-	while ((n = read(fd, buf, BUFSIZ)) > 0) {
+	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
-	}
 	close(fd);
 
 	get_dpath(argc, args, &dpath);
@@ -61,10 +60,13 @@ void *gcc(void *arg)
 int main(int argc, char *argv[])
 {
 	int listenfd = 0, *connfd, option = 1;
+	char *pwd;
 	struct sockaddr_in serv_addr;
 	pthread_t t;
 
-	chdir("/home/d/linux");
+	pwd = getenv("KBUILD_DIR");
+	if(pwd)
+		chdir(pwd);
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
