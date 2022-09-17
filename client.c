@@ -25,10 +25,26 @@ bool check_is_cc(int argc, char **argv)
 	if (!EndsWith(argv[argc - 1], ".c"))
 		return false;
 
-/*
-	if (strstr(argv[argc - 1], "arch/x86") != NULL)
+	if (strstr(argv[argc - 1], "arch/x86/boot"))
 		return false;
-*/
+
+	if (strstr(argv[argc - 1], "arch/x86/entry"))
+		return false;
+
+	if (strstr(argv[argc - 1], "arch/x86/lib/inat.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "arch/x86/kernel/cpu/capflags.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "drivers/tty/vt/consolemap_deftbl.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "drivers/tty/vt/defkeymap.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "lib/crc32.c"))
+		return false;
 
 	for (i = 0; i < argc; i++) {
 		if (!strcmp("-c", argv[i])) {
@@ -109,6 +125,7 @@ void distcc(int argc, char **argv)
 bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
+		return true;
 		if (get_file_size(argv[argc - 1]) > 1000) {
 			srand(time(NULL) + getpid());
 			if (rand() % 8 > 2)
