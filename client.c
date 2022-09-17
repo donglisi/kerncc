@@ -89,29 +89,17 @@ void distcc(int argc, char **argv)
 
 	cmd = get_cmd(argc, argv);
 
-	printf("%s %d\n", cmd, strlen(cmd));
-
 	write_from_str(sockfd, cmd);
 
-/*
 	get_opath(argc, argv, &opath);
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
-	read(sockfd, &size, sizeof(int));
-	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
-		size -= n;
-		if (write(fd, buf, n) != n)
-			printf("write error %d\n", n);
-	}
+	read_to_fd(sockfd, fd);
 	close(fd);
 
 	get_dpath(argc, argv, &dpath);
 	fd = open(dpath, O_CREAT | O_WRONLY, 0644);
-	while ((n = read(sockfd, buf, BUFSIZ)) > 0) {
-		if (write(fd, buf, n) != n)
-			printf("write error %d\n", n);
-	}
+	read_to_fd(sockfd, fd);
 	close(fd);
-*/
 
 	free(cmd);
 }
