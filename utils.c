@@ -14,7 +14,9 @@
 #include <sys/types.h>
 #include <time.h>
 
-extern char cc[];
+char cc[] = "/usr/bin/gcc";
+// char cc[] = "/usr/lib64/ccache/gcc";
+
 char *get_cmd(int argc, char **argv)
 {
 	int i, loc, size;
@@ -38,6 +40,15 @@ char *get_cmd(int argc, char **argv)
 	return cmd;
 }
 
+int get_argc(char **args)
+{
+	int i;
+
+	for (i = 0; args[i]; i++)
+		;
+	return i;
+}
+
 char **get_args(char *cmd)
 {
 	int i, j, len, loc, argc, cmd_len, *arg_lens;
@@ -49,7 +60,7 @@ char **get_args(char *cmd)
 			argc++;
 	argc++;
 
-	arg_lens = calloc(argc, sizeof(int));
+	arg_lens = calloc(argc + 1, sizeof(int));
 	for (i = 0, j = 0, len = 0 ; i < cmd_len; i++, len++) {
 		if (cmd[i] == ' ') {
 			if (j == 0)
@@ -72,6 +83,8 @@ char **get_args(char *cmd)
 	}
 
 	free(arg_lens);
+	args[argc] = 0;
+
 	return args;
 }
 
@@ -157,10 +170,22 @@ char *read_to_str(int fd)
 	str = malloc(len);
 	while ((n = read(fd, buf, BUFSIZ < len ? BUFSIZ : len)) > 0) {
 		strncpy(&str[loc], buf, n);
-		len -= n;
 		loc += n;
+		len -= n;
 	}
 	return str;
+}
+
+void write_from_str(int fd, char *str)
+{
+	int n, len = strlen(str) + 1, loc = 0;
+
+	write(fd, &len, sizeof(int));
+	do {
+		n = write(fd, &str[loc], len);
+		loc += n;
+		len -= n;
+	} while (len > 0);
 }
 
 void read_to_fd(int infd, int outfd)
@@ -174,4 +199,14 @@ void read_to_fd(int infd, int outfd)
 		if (write(outfd, buf, n) != n)
 			printf("write error %d\n", n);
 	}
+}
+
+void print_cmd(char **args)
+{
+	int i;
+	char *arg;
+
+	for (i = 0, arg = args[0]; args[i]; i++)
+		printf("%s ", args[i]);
+	printf("\n");
 }

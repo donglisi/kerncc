@@ -1,6 +1,11 @@
 char *get_cmd(int argc, char **argv);
 char **get_args(char *cmd);
+int get_argc(char **args);
 void get_opath(int argc, char **argv, char **opath);
 void get_dpath(int argc, char **argv, char **dpath);
 int get_file_size(char *path);
 int EndsWith(const char *str, const char *suffix);
+char *read_to_str(int fd);
+void write_from_str(int fd, char *str);
+void read_to_fd(int infd, int outfd);
+void print_cmd(char **args);

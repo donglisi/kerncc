@@ -16,8 +16,7 @@
 
 #include "utils.h"
 
-char cc[] = "/usr/bin/gcc";
-// char cc[] = "/usr/lib64/ccache/gcc";
+extern char cc[];
 
 bool check_is_cc(int argc, char **argv)
 {
@@ -83,14 +82,16 @@ int get_sockfd()
 
 void distcc(int argc, char **argv)
 {
-	int sockfd, i, fd, n, size;
+	int sockfd, i, fd, n, len;
 	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
 
-//	sockfd = get_sockfd();
+	sockfd = get_sockfd();
 
 	cmd = get_cmd(argc, argv);
 
 	printf("%s %d\n", cmd, strlen(cmd));
+
+	write_from_str(sockfd, cmd);
 
 /*
 	get_opath(argc, argv, &opath);

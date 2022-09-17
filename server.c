@@ -15,33 +15,20 @@
 
 #include "utils.h"
 
-void print_cmd(char **args)
-{
-	int i;
-	char *arg;
-
-	for (i = 0, arg = args[0]; args[i]; i++)
-		printf("%s ", args[i]);
-	printf("\n");
-}
-
 void *gcc(void *arg)
 {
-	int connfd = *((int *)arg), fd, n, len;
-	char buf[BUFSIZ], cmd, **args, *opath, *dpath;
+	int connfd = *((int *)arg), fd, n, len, argc;
+	char buf[BUFSIZ], *cmd, **args, *opath, *dpath;
 	pid_t pid;
 	int wstatus;
 
-
-	read(sockfd, &size, sizeof(int));
-	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
-		size -= n;
-		if (write(fd, buf, n) != n)
-			printf("write error %d\n", n);
-	}
-
+	cmd = read_to_str(connfd);
 	args = get_args(cmd);
-	// print_cmd(args);
+	print_cmd(args);
+
+	argc = get_argc(args);
+
+	return 0;
 
 	pid = fork();
 	if (!pid) {
@@ -49,31 +36,9 @@ void *gcc(void *arg)
 	}
 	waitpid(pid, &wstatus, 0);
 
-	get_opath(iovcnt, args, &opath);
-	size = get_file_size(opath);
-	write(connfd, &size, sizeof(int));
-	fd = open(opath, O_RDONLY);
-	while ((n = read(fd, buf, BUFSIZ)) > 0) {
-		if (write(connfd, buf, n) != n)
-			printf("write error\n");
-	}
-	close(fd);
-
-	get_dpath(iovcnt, args, &dpath);
-	fd = open(dpath, O_RDONLY);
-	free(dpath);
-	while ((n = read(fd, buf, BUFSIZ)) > 0)
-		if (write(connfd, buf, n) != n)
-			printf("write error\n");
-	close(fd);
-
-	close(connfd);
-
-	for (int i = 0; i < iovcnt; i++)
-		free(iovs[i].iov_base);
+	for (int i = 0; i < argc; i++)
+		free(args[i]);
 	free(args);
-	free(iovs);
-	free(iovs_len);
 	free(arg);
 }
 
