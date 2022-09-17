@@ -108,9 +108,8 @@ void distcc(int argc, char **argv)
 
 bool need_remote_cc(int argc, char **argv)
 {
-	return true;
 	if (check_is_cc(argc, argv)) {
-		if (get_file_size(argv[argc - 1]) > 2000) {
+		if (get_file_size(argv[argc - 1]) > 1000) {
 			srand(time(NULL) + getpid());
 			if (rand() % 8 > 2)
 				return true;
