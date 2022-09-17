@@ -148,12 +148,30 @@ int EndsWith(const char *str, const char *suffix)
 	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 
-char *read_in_str(int fd, int size)
+char *read_to_str(int fd)
 {
-	read(fd, &size, sizeof(int));
-	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+	int n, len, loc = 0;
+	char *str, buf[BUFSIZ];
+
+	read(fd, &len, sizeof(int));
+	str = malloc(len);
+	while ((n = read(fd, buf, BUFSIZ < len ? BUFSIZ : len)) > 0) {
+		strncpy(&str[loc], buf, n);
+		len -= n;
+		loc += n;
+	}
+	return str;
+}
+
+void read_to_fd(int infd, int outfd)
+{
+	int n, size;
+	char buf[BUFSIZ];
+
+	read(infd, &size, sizeof(int));
+	while ((n = read(infd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
 		size -= n;
-		if (write(fd, buf, n) != n)
+		if (write(outfd, buf, n) != n)
 			printf("write error %d\n", n);
 	}
 }
