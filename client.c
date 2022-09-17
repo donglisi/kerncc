@@ -83,25 +83,16 @@ int get_sockfd()
 
 void distcc(int argc, char **argv)
 {
-	int sockfd, i, fd, n, iovs_len[argc], size;
-	char buf[BUFSIZ], *opath, *dpath;
-	struct iovec *iovs;
+	int sockfd, i, fd, n, size;
+	char buf[BUFSIZ], *opath, *dpath, *cmd;
 
-	sockfd = get_sockfd();
-	iovs = calloc(argc, sizeof(struct iovec));
-	iovs[0].iov_base = &cc;
-	iovs[0].iov_len = strlen(iovs[0].iov_base) + 1;
-	iovs_len[0] = iovs[0].iov_len;
-	for (i = 1; i < argc; i++) {
-		iovs[i].iov_base = argv[i];
-		iovs[i].iov_len = strlen(argv[i]) + 1;
-		iovs_len[i] = iovs[i].iov_len;
-	}
+//	sockfd = get_sockfd();
 
-	write(sockfd, &argc, sizeof(int));
-	write(sockfd, iovs_len, sizeof(iovs_len));
-	writev(sockfd, iovs, argc);
+	cmd = get_cmd(argc, argv);
 
+	printf("%s %d\n", cmd, strlen(cmd));
+
+/*
 	get_opath(argc, argv, &opath);
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
 	read(sockfd, &size, sizeof(int));
@@ -119,10 +110,14 @@ void distcc(int argc, char **argv)
 			printf("write error %d\n", n);
 	}
 	close(fd);
+*/
+
+	free(cmd);
 }
 
 bool need_remote_cc(int argc, char **argv)
 {
+	return true;
 	if (check_is_cc(argc, argv)) {
 		if (get_file_size(argv[argc - 1]) > 2000) {
 			srand(time(NULL) + getpid());

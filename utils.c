@@ -14,6 +14,30 @@
 #include <sys/types.h>
 #include <time.h>
 
+extern char cc[];
+char *get_cmd(int argc, char **argv)
+{
+	int i, loc, size;
+	char *cmd;
+
+	size = strlen(cc) + 1;
+	for (i = 1; i < argc; i++)
+		size += strlen(argv[i]) + 1;
+
+	cmd = malloc(size);
+	strcpy(cmd, cc);
+	loc = strlen(cc);
+	cmd[loc++] = ' ';
+	for (i = 1; i < argc; i++) {
+		strcpy(&cmd[loc], argv[i]);
+		loc += strlen(argv[i]);
+		cmd[loc++] = ' ';
+	}
+	cmd[size - 1] = 0;
+
+	return cmd;
+}
+
 void get_opath(int argc, char **argv, char **opath)
 {
 	int i;
