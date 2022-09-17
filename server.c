@@ -19,7 +19,7 @@
 void *gcc(void *arg)
 {
 	int connfd = *((int *)arg), fd, n, size, argc;
-	char buf[BUFSIZ], *cmd, **args, *opath, *dpath;
+	char buf[BUFSIZ], *cmd, **args, *dirpath, *opath, *dpath;
 	pid_t pid;
 	int wstatus;
 
@@ -33,7 +33,8 @@ void *gcc(void *arg)
 	waitpid(pid, &wstatus, 0);
 
 	get_opath(argc, args, &opath);
-	mkdir_recursion(dirname(opath));
+	dirname1(opath, &dirpath);
+	mkdir_recursion(dirpath);
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);

@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <time.h>
 
+#include "utils.h"
+
 // char cc[] = "/usr/bin/gcc";
 char cc[] = "/usr/lib64/ccache/gcc";
 
@@ -104,21 +106,27 @@ void get_opath(int argc, char **argv, char **opath)
 void get_dpath(int argc, char **argv, char **dpath)
 {
 	int loc;
-	char *opath;
+	char *opath, *dirpath, *name;
 
 	get_opath(argc, argv, &opath);
+	dirname1(opath, &dirpath);
+	basename1(opath, &name);
+
 	*dpath = malloc(strlen(opath) + 4);
 	dpath[strlen(opath) + 3] = 0;
-
-	strcpy(*dpath, dirname(opath));
-	loc = strlen(dirname(opath));
+	dirpath = dirname1(opath);
+	strcpy(*dpath, dirpath);
+	loc = strlen(dirpath);
 	strcpy(&((*dpath)[loc]), "/.");
 	loc += 2;
-	strcpy(&((*dpath)[loc]), basename(opath));
-	loc += strlen(basename(opath));
+	strcpy(&((*dpath)[loc]), name);
+	loc += strlen(name);
 	strcpy(&((*dpath)[loc]), ".d");
 	loc += 2;
 	(*dpath)[loc] = 0;
+
+	free(dirpath);
+	free(name);
 }
 
 int get_file_size(char *path)
@@ -205,4 +213,28 @@ void mkdir_recursion(char *path)
 	cmd[cmd_len -1 ] = 0;
 	system(cmd);
 	free(cmd);
+}
+
+void dirname1(char *path, char **dir)
+{
+	char *copy, *tmp;
+
+	copy = malloc(strlen(path) + 1);
+	strcpy(copy, path);
+	tmp = dirname(copy);
+	*dir = malloc(strlen(tmp) + 1);
+	strcpy(*dir, tmp);
+	free(copy);
+}
+
+char *basename1(char *path, char **name)
+{
+	char *copy, *tmp;
+
+	copy = malloc(strlen(path) + 1);
+	strcpy(copy, path);
+	tmp = dirname(copy);
+	*name = malloc(strlen(tmp) + 1);
+	strcpy(*name, tmp);
+	free(copy);
 }
