@@ -45,9 +45,6 @@ void *gcc(void *arg)
 	close(fd);
 
 	get_dpath(argc, args, &dpath);
-	printf("dpath %s\n", dpath);
-
-	get_dpath(argc, args, &dpath);
 	size = get_file_size(dpath);
 	write(connfd, &size, sizeof(int));
 	fd = open(dpath, O_RDONLY);
@@ -59,7 +56,7 @@ void *gcc(void *arg)
 
 	for (int i = 1; i < argc; i++)
 		free(args[i]);
-	// free(dirpath);
+	free(dirpath);
 	free(args);
 	close(connfd);
 	free(arg);
