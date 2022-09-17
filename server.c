@@ -47,7 +47,7 @@ void *gcc(void *arg)
 
 	pid = fork();
 
-	print_cmd(args);
+	// print_cmd(args);
 	if (!pid) {
 		execvp(args[0], args);
 	}

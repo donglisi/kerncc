@@ -42,7 +42,7 @@ void get_dpath(int argc, char **argv, char **dpath)
 	(*dpath)[loc] = '/';
 	(*dpath)[loc + 1] = '.';
 	strcpy(&((*dpath)[strlen(opath) + 1]), ".d");
-	printf("dpath %s\n", *dpath);
+	// printf("dpath %s\n", *dpath);
 }
 
 void get_cmdpath(int argc, char **argv, char **cmdpath)
@@ -61,7 +61,7 @@ void get_cmdpath(int argc, char **argv, char **cmdpath)
 	(*cmdpath)[loc] = '/';
 	(*cmdpath)[loc + 1] = '.';
 	strcpy(&((*cmdpath)[strlen(opath) + 1]), ".cmd");
-	printf("cmdpath %s\n", *cmdpath);
+	// printf("cmdpath %s\n", *cmdpath);
 }
 
 int get_file_size(char *path)
