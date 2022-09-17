@@ -84,7 +84,7 @@ int get_sockfd()
 void distcc(int argc, char **argv)
 {
 	int sockfd, i, fd, n, size;
-	char buf[BUFSIZ], *opath, *dpath, *cmd;
+	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
 
 //	sockfd = get_sockfd();
 

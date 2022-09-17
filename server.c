@@ -27,31 +27,26 @@ void print_cmd(char **args)
 
 void *gcc(void *arg)
 {
-	int connfd = *((int *)arg), fd, n, *iovs_len, iovcnt, size;
-	char buf[BUFSIZ], **args, *opath, *dpath;
-	struct iovec *iovs;
+	int connfd = *((int *)arg), fd, n, len;
+	char buf[BUFSIZ], cmd, **args, *opath, *dpath;
 	pid_t pid;
 	int wstatus;
 
-	n = read(connfd, &iovcnt, sizeof(int));
-	iovs_len = calloc(iovcnt, sizeof(int));
-	read(connfd, iovs_len, sizeof(int) * iovcnt);
-	iovs = calloc(iovcnt, sizeof(struct iovec));
-	args = calloc(iovcnt + 1, sizeof(void*));
-	for (int i = 0; i < iovcnt; i++) {
-		iovs[i].iov_base = malloc(iovs_len[i]);
-		iovs[i].iov_len = iovs_len[i];
-		args[i] = iovs[i].iov_base;
+
+	read(sockfd, &size, sizeof(int));
+	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+		size -= n;
+		if (write(fd, buf, n) != n)
+			printf("write error %d\n", n);
 	}
-	readv(connfd, iovs, iovcnt);
+
+	args = get_args(cmd);
+	// print_cmd(args);
 
 	pid = fork();
-
-	// print_cmd(args);
 	if (!pid) {
 		execvp(args[0], args);
 	}
-
 	waitpid(pid, &wstatus, 0);
 
 	get_opath(iovcnt, args, &opath);

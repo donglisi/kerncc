@@ -38,6 +38,43 @@ char *get_cmd(int argc, char **argv)
 	return cmd;
 }
 
+char **get_args(char *cmd)
+{
+	int i, j, len, loc, argc, cmd_len, *arg_lens;
+	char **args, *arg;
+
+	cmd_len = strlen(cmd);
+	for (i = 0, argc = 0; i < cmd_len; i++)
+		if (cmd[i] == ' ')
+			argc++;
+	argc++;
+
+	arg_lens = calloc(argc, sizeof(int));
+	for (i = 0, j = 0, len = 0 ; i < cmd_len; i++, len++) {
+		if (cmd[i] == ' ') {
+			if (j == 0)
+				arg_lens[j] = len;
+			else
+				arg_lens[j] = len - 1;
+			j++;
+			len = 0;
+		}
+	}
+	arg_lens[j] = len - 1;
+
+	args = calloc(argc, sizeof(void *));
+	for (i = 0, loc = 0; i < argc; i++) {
+		len = arg_lens[i];
+		args[i] = malloc(len + 1);
+		strncpy(args[i], &cmd[loc], len);
+		args[i][len] = 0;
+		loc += len + 1;
+	}
+
+	free(arg_lens);
+	return args;
+}
+
 void get_opath(int argc, char **argv, char **opath)
 {
 	int i;
@@ -109,4 +146,14 @@ int EndsWith(const char *str, const char *suffix)
 	if (lensuffix >  lenstr)
 		return 0;
 	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
+char *read_in_str(int fd, int size)
+{
+	read(fd, &size, sizeof(int));
+	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+		size -= n;
+		if (write(fd, buf, n) != n)
+			printf("write error %d\n", n);
+	}
 }
