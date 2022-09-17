@@ -193,7 +193,7 @@ void read_to_fd(int infd, int outfd)
 	int n, size;
 	char buf[BUFSIZ];
 
-	read(infd, &size, sizeof(int));
+	n = read(infd, &size, sizeof(int));
 	while ((n = read(infd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
 		size -= n;
 		if (write(outfd, buf, n) != n)

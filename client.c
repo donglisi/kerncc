@@ -58,8 +58,8 @@ int get_sockfd()
 	struct sockaddr_in serv_addr;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf("\n Error : Could not create socket \n");
-		return 1;
+		printf("Error : Could not create socket\n");
+		return -1;
 	}
 
 	memset(&serv_addr, '0', sizeof(serv_addr));
@@ -68,13 +68,13 @@ int get_sockfd()
 	serv_addr.sin_port = htons(5000);
 
 	if (inet_pton(AF_INET, "192.168.1.3", &serv_addr.sin_addr) <= 0) {
-		printf("\n inet_pton error occured\n");
-		return 1;
+		printf("inet_pton error occured\n");
+		return -1;
 	}
 
 	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-		printf("\n Error : Connect Failed \n");
-		return 1;
+		printf("Error : Connect Failed\n");
+		return -1;
 	}
 
 	return sockfd;
@@ -86,6 +86,8 @@ void distcc(int argc, char **argv)
 	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
+	if (sockfd == -1)
+		gcc(argc, argv);
 
 	cmd = get_cmd(argc, argv);
 
@@ -110,7 +112,7 @@ bool need_remote_cc(int argc, char **argv)
 	if (check_is_cc(argc, argv)) {
 		if (get_file_size(argv[argc - 1]) > 2000) {
 			srand(time(NULL) + getpid());
-			if (rand() % 5 > 1)
+			if (rand() % 8 > 2)
 				return true;
 			else
 				return false;
