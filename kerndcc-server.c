@@ -79,7 +79,7 @@ void *cc_thread(void *arg)
 	dirname1(opath, &odir);
 	mkdir_recursion(odir);
 
-	if(native_cc(connfd, args)) {
+	if (native_cc(connfd, args)) {
 		ret = -1;
 		goto compile_error;
 	}
@@ -102,7 +102,7 @@ void *cc_thread(void *arg)
 	close(fd);
 	free(dpath);
 
-compile_error;
+compile_error:
 	for (i = 0; args[i]; i++)
 		free(args[i]);
 	free(args);
