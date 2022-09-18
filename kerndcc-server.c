@@ -14,7 +14,7 @@
 
 int verbose = 0;
 
-void native_cc(int connfd, char **args)
+int native_cc(int connfd, char **args)
 {
 	int fd, n, size, wstatus, es, erroutfd[2];
 	char buf[BUFSIZ], *epath;
@@ -29,7 +29,6 @@ void native_cc(int connfd, char **args)
 	}
 	close(erroutfd[1]);
 	waitpid(pid, &wstatus, 0);
-
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
 
@@ -57,14 +56,16 @@ void native_cc(int connfd, char **args)
 
 		remove(epath);
 		free(epath);
+		return -1;
 	}
 
 	close(erroutfd[0]);
+	return 0;
 }
 
 void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, fd, n, size;
+	int connfd = *((int *)arg), i, fd, n, size, ret = 0;
 	char buf[BUFSIZ], *cmd, **args, *dirpath, *opath, *dpath;
 
 	cmd = read_to_str(connfd);
@@ -77,7 +78,10 @@ void *cc_thread(void *arg)
 	dirname1(opath, &dirpath);
 	mkdir_recursion(dirpath);
 
-	native_cc(connfd, args);
+	if(native_cc(connfd, args)) {
+		ret = -1;
+		goto compile_error;
+	}
 
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
@@ -95,15 +99,17 @@ void *cc_thread(void *arg)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
 	close(fd);
+	free(dpath);
 
+compile_error;
 	for (i = 0; args[i]; i++)
 		free(args[i]);
-	free(dpath);
-	free(dirpath);
 	free(args);
 	free(arg);
+	free(dirpath);
 
 	close(connfd);
+	return ret;
 }
 
 int main(int argc, char *argv[])
