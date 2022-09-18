@@ -1,19 +1,12 @@
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <libgen.h>
-#include <arpa/inet.h>
 #include <stdio.h>
-#include <sys/uio.h>
-#include <sys/wait.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-#include <pthread.h>
 #include <sys/types.h>
-#include <time.h>
 
 #include "utils.h"
 
@@ -80,6 +73,27 @@ char **get_args(char *cmd)
 	args[argc] = 0;
 
 	return args;
+}
+
+char **argc_argv_to_args(char argc, char **argv)
+{
+	char **args;
+
+	args = calloc(sizeof(void*), argc + 1);
+	for (int i = 0; i < argc; i++)
+		args[i] = argv[i];
+	args[argc] = NULL;
+	return args;
+}
+
+void print_args(char **args)
+{
+	int i;
+	char *arg;
+
+	for (i = 0, arg = args[0]; args[i]; i++)
+		printf("%s ", args[i]);
+	printf("\n");
 }
 
 void get_opath(char **args, char **opath)
@@ -194,29 +208,6 @@ void read_to_fd(int infd, int outfd)
 	}
 }
 
-void print_args(char **args)
-{
-	int i;
-	char *arg;
-
-	for (i = 0, arg = args[0]; args[i]; i++)
-		printf("%s ", args[i]);
-	printf("\n");
-}
-
-void mkdir_recursion(char *path)
-{
-	char *cmd, mk[] = "mkdir -p ";
-	int mk_len = strlen(mk), cmd_len = mk_len + strlen(path) + 1;
-
-	cmd = malloc(cmd_len);
-	strcpy(cmd, mk);
-	strcpy(&cmd[mk_len], path);
-	cmd[cmd_len -1 ] = 0;
-	system(cmd);
-	free(cmd);
-}
-
 void dirname1(char *path, char **dir)
 {
 	char *copy, *tmp;
@@ -241,14 +232,15 @@ char *basename1(char *path, char **name)
 	free(copy);
 }
 
-char **argc_argv_to_args(char argc, char **argv)
+void mkdir_recursion(char *path)
 {
-	char **args;
+	char *cmd, mk[] = "mkdir -p ";
+	int mk_len = strlen(mk), cmd_len = mk_len + strlen(path) + 1;
 
-	args = calloc(sizeof(void*), argc + 1);
-	for (int i = 0; i < argc; i++)
-		args[i] = argv[i];
-	args[argc] = NULL;
-	return args;
+	cmd = malloc(cmd_len);
+	strcpy(cmd, mk);
+	strcpy(&cmd[mk_len], path);
+	cmd[cmd_len -1 ] = 0;
+	system(cmd);
+	free(cmd);
 }
-

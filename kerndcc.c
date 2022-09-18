@@ -1,18 +1,16 @@
-#include <sys/socket.h>
 #include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/uio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <arpa/inet.h>
 #include <stdbool.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include "utils.h"
 
@@ -114,7 +112,7 @@ int remote_cc(int argc, char **argv)
 
 	sockfd = get_sockfd();
 	if (sockfd == -1)
-		native_cc(argc, argv);
+		return native_cc(argc, argv);
 
 	cmd = get_cmd(argc, argv);
 	args = argc_argv_to_args(argc, argv);
