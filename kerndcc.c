@@ -120,7 +120,7 @@ int remote_cc(int argc, char **argv)
 	write_from_str(sockfd, cmd);
 
 	read(sockfd, &es, sizeof(int));
-	if(es < 0) {
+	if (es < 0) {
 		read_to_fd(sockfd, STDERR_FILENO);
 		ret = -1;
 		goto compile_error;
@@ -137,7 +137,7 @@ int remote_cc(int argc, char **argv)
 	close(fd);
 	free(dpath);
 
-compile_error;
+compile_error:
 	free(cmd);
 	close(sockfd);
 
@@ -146,8 +146,8 @@ compile_error;
 
 bool need_remote_cc(int argc, char **argv)
 {
+	return true;
 	if (check_is_cc(argc, argv)) {
-		return true;
 		if (get_file_size(argv[argc - 1]) > 1000) {
 			srand(time(NULL) + getpid());
 			if (rand() % 8 > 2)
