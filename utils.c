@@ -232,14 +232,14 @@ char *basename1(char *path, char **name)
 	free(copy);
 }
 
-void mkdir_recursion(char *path)
+void mkdir_recursion(char *dir)
 {
 	char *cmd, mk[] = "mkdir -p ";
-	int mk_len = strlen(mk), cmd_len = mk_len + strlen(path) + 1;
+	int mk_len = strlen(mk), cmd_len = mk_len + strlen(dir) + 1;
 
 	cmd = malloc(cmd_len);
 	strcpy(cmd, mk);
-	strcpy(&cmd[mk_len], path);
+	strcpy(&cmd[mk_len], dir);
 	cmd[cmd_len -1 ] = 0;
 	system(cmd);
 	free(cmd);

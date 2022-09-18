@@ -12,22 +12,22 @@
 
 #include "utils.h"
 
-int verbose = 0;
+static int verbose = 0;
 
 int native_cc(int connfd, char **args)
 {
-	int fd, n, size, wstatus, es, erroutfd[2];
+	int fd, n, size, wstatus, es, errfd[2];
 	char buf[BUFSIZ], *epath;
 	pid_t pid;
 
-	pipe(erroutfd);
+	pipe(errfd);
 	pid = fork();
 	if (!pid) {
-		close(erroutfd[0]);
-		dup2(erroutfd[1], STDERR_FILENO);
+		close(errfd[0]);
+		dup2(errfd[1], STDERR_FILENO);
 		execvp(args[0], args);
 	}
-	close(erroutfd[1]);
+	close(errfd[1]);
 	waitpid(pid, &wstatus, 0);
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
@@ -42,7 +42,7 @@ int native_cc(int connfd, char **args)
 		get_epath(args, &epath);
 
 		fd = open(epath, O_CREAT | O_RDWR, 0644);
-		while ((n = read(erroutfd[1], buf, BUFSIZ)) > 0)
+		while ((n = read(errfd[1], buf, BUFSIZ)) > 0)
 			if (write(fd, buf, n) != n)
 				printf("write error\n");
 
@@ -59,14 +59,15 @@ int native_cc(int connfd, char **args)
 		return -1;
 	}
 
-	close(erroutfd[0]);
+	close(errfd[0]);
+
 	return 0;
 }
 
 void *cc_thread(void *arg)
 {
 	int connfd = *((int *)arg), i, fd, n, size, ret = 0;
-	char buf[BUFSIZ], *cmd, **args, *dirpath, *opath, *dpath;
+	char buf[BUFSIZ], *cmd, **args, *odir, *opath, *dpath;
 
 	cmd = read_to_str(connfd);
 	if(verbose)
@@ -75,8 +76,8 @@ void *cc_thread(void *arg)
 	args = get_args(cmd);
 
 	get_opath(args, &opath);
-	dirname1(opath, &dirpath);
-	mkdir_recursion(dirpath);
+	dirname1(opath, &odir);
+	mkdir_recursion(odir);
 
 	if(native_cc(connfd, args)) {
 		ret = -1;
@@ -106,7 +107,7 @@ compile_error;
 		free(args[i]);
 	free(args);
 	free(arg);
-	free(dirpath);
+	free(odir);
 
 	close(connfd);
 	return ret;

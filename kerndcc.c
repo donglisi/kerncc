@@ -107,7 +107,7 @@ int get_sockfd()
 
 int remote_cc(int argc, char **argv)
 {
-	int sockfd, i, fd, n, len, es;
+	int sockfd, i, fd, n, len, es, ret = 0;
 	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
@@ -122,7 +122,8 @@ int remote_cc(int argc, char **argv)
 	read(sockfd, &es, sizeof(int));
 	if(es < 0) {
 		read_to_fd(sockfd, STDERR_FILENO);
-		return es;
+		ret = -1;
+		goto compile_error;
 	}
 
 	get_opath(args, &opath);
@@ -134,10 +135,13 @@ int remote_cc(int argc, char **argv)
 	fd = open(dpath, O_CREAT | O_WRONLY, 0644);
 	read_to_fd(sockfd, fd);
 	close(fd);
+	free(dpath);
 
+compile_error;
 	free(cmd);
+	close(sockfd);
 
-	return 0;
+	return ret;
 }
 
 bool need_remote_cc(int argc, char **argv)
