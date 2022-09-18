@@ -16,6 +16,8 @@
 
 #include "utils.h"
 
+int verbose = 0;
+
 void *gcc(void *arg)
 {
 	int connfd = *((int *)arg), fd, n, size, argc, wstatus, erroutfd[2];
@@ -23,6 +25,9 @@ void *gcc(void *arg)
 	pid_t pid;
 
 	cmd = read_to_str(connfd);
+	if(verbose)
+		printf("%s\n", cmd);
+
 	args = get_args(cmd);
 	argc = get_argc(args);
 
@@ -43,7 +48,8 @@ void *gcc(void *arg)
 	WIFEXITED(wstatus);
 	int es = WEXITSTATUS(wstatus);
 	if (es) {
-		printf("%s\n", cmd);
+		if (!verbose)
+			printf("%s\n", cmd);
 		write(connfd, &es, sizeof(int));
 		get_epath(argc, args, &epath);
 		fd = open(epath, O_CREAT | O_RDWR, 0644);
@@ -94,6 +100,9 @@ int main(int argc, char *argv[])
 	char *pwd;
 	struct sockaddr_in serv_addr;
 	pthread_t t;
+
+	if (argc > 1)
+		verbose = 1;
 
 	pwd = getenv("KBUILD_DIR");
 	if (pwd)
