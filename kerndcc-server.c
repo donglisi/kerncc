@@ -1,18 +1,13 @@
 #include <sys/socket.h>
-#include <libgen.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
-#include <sys/uio.h>
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <pthread.h>
-#include <sys/types.h>
-#include <time.h>
 
 #include "utils.h"
 
