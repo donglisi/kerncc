@@ -43,15 +43,6 @@ char *get_cmd(int argc, char **argv)
 	return cmd;
 }
 
-int get_argc(char **args)
-{
-	int i;
-
-	for (i = 0; args[i]; i++)
-		;
-	return i;
-}
-
 char **get_args(char *cmd)
 {
 	int i, j, len, loc, argc, cmd_len, *arg_lens;
@@ -91,24 +82,24 @@ char **get_args(char *cmd)
 	return args;
 }
 
-void get_opath(int argc, char **argv, char **opath)
+void get_opath(char **args, char **opath)
 {
 	int i;
 
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-o", argv[i])) {
-			*opath = argv[i + 1];
+	for (i = 0; args[i]; i++) {
+		if (!strcmp("-o", args[i])) {
+			*opath = args[i + 1];
 			return;
 		}
 	}
 }
 
-void get_dpath(int argc, char **argv, char **dpath)
+void get_dpath(char **args, char **dpath)
 {
 	int loc;
 	char *opath, *dirpath, *name;
 
-	get_opath(argc, argv, &opath);
+	get_opath(args, &opath);
 	dirname1(opath, &dirpath);
 	basename1(opath, &name);
 
@@ -127,13 +118,13 @@ void get_dpath(int argc, char **argv, char **dpath)
 	free(name);
 }
 
-void get_epath(int argc, char **argv, char **epath)
+void get_epath(char **args, char **epath)
 {
 	int len;
 	char *opath;
 
 	len = strlen(opath);
-	get_opath(argc, argv, &opath);
+	get_opath(args, &opath);
 	*epath = malloc(len + 3);
 	strcpy(*epath, opath);
 	strcpy(&((*epath)[len]), ".e");
@@ -203,7 +194,7 @@ void read_to_fd(int infd, int outfd)
 	}
 }
 
-void print_cmd(char **args)
+void print_args(char **args)
 {
 	int i;
 	char *arg;
