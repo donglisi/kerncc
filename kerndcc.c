@@ -17,6 +17,7 @@
 extern char cc[];
 
 bool check_is_cc(int argc, char **argv);
+int native_cc(char argc, char **argv);
 
 bool need_remote_cc(int argc, char **argv)
 {
@@ -121,6 +122,20 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
+static char *paths[] = { // compile native only
+			"/arch/x86/boot",
+			"/arch/x86/entry",
+			"/drivers/scsi/",
+			"/drivers/gpu/drm/radeon/",
+			"/crypto",
+			"/security/selinux",
+			"/security/keys/trusted-keys/trusted_tpm2.c",
+			"/kernel/configs.c",
+			"/arch/x86/lib/inat.c",
+			"/lib/oid_registry.c",
+			"/lib/crc",
+			NULL};
+
 bool check_is_cc(int argc, char **argv)
 {
 	int i;
@@ -131,43 +146,15 @@ bool check_is_cc(int argc, char **argv)
 	if (argv[argc - 1][0] != '/')
 		return false;
 
-	if (strstr(argv[argc - 1], "/arch/x86/boot"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/arch/x86/entry"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/drivers/scsi/"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/drivers/gpu/drm/radeon/"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/crypto"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/security/selinux"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/security/keys/trusted-keys/trusted_tpm2.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/kernel/configs.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/arch/x86/lib/inat.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/lib/oid_registry.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/lib/crc"))
-		return false;
-
+	for (i = 0; paths[i]; i++)
+		if (strstr(argv[argc - 1], paths[i]))
+			return false;
+/*
 	for (i = 0; i < argc; i++) {
 		if (!strcmp("-c", argv[i])) {
 			return true;
 		}
 	}
-	return false;
+*/
+	return true;
 }
