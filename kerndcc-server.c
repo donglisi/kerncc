@@ -31,13 +31,12 @@ int native_cc(int connfd, char **args)
 	waitpid(pid, &wstatus, 0);
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
+	n = write(connfd, &es, sizeof(int));
 
 	/* if compile faile */
 	if (es) {
 		if (!verbose)
 			print_args(args);
-
-		write(connfd, &es, sizeof(int));
 
 		get_epath(args, &epath);
 
@@ -47,7 +46,7 @@ int native_cc(int connfd, char **args)
 				printf("write error\n");
 
 		size = lseek(fd, 0, SEEK_END);
-		write(connfd, &size, sizeof(int));
+		n = write(connfd, &size, sizeof(int));
 		lseek(fd, 0, SEEK_SET);
 		while ((n = read(fd, buf, BUFSIZ)) > 0)
 			if (write(connfd, buf, n) != n)
@@ -83,7 +82,7 @@ void *cc_thread(void *arg)
 		goto compile_error;
 
 	size = get_file_size(opath);
-	write(connfd, &size, sizeof(int));
+	n = write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
@@ -92,7 +91,7 @@ void *cc_thread(void *arg)
 
 	get_dpath(args, &dpath);
 	size = get_file_size(dpath);
-	write(connfd, &size, sizeof(int));
+	n = write(connfd, &size, sizeof(int));
 	fd = open(dpath, O_RDONLY);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
