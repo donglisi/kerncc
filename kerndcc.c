@@ -134,6 +134,7 @@ static char *paths[] = { // compile native only
 			"/arch/x86/lib/inat.c",
 			"/lib/oid_registry.c",
 			"/lib/crc",
+			"/lib/zstd/common",
 			NULL};
 
 bool check_is_cc(int argc, char **argv)

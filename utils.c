@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "err.h"
 #include "utils.h"
 
 char cc[] = "/usr/bin/gcc";
@@ -137,6 +138,7 @@ void get_epath(char **args, char **epath)
 	int len;
 	char *opath;
 
+	get_opath(args, &opath);
 	len = strlen(opath);
 	get_opath(args, &opath);
 	*epath = malloc(len + 3);
@@ -170,10 +172,12 @@ int EndsWith(const char *str, const char *suffix)
 
 char *read_to_str(int fd)
 {
-	int n, len, loc = 0;
+	int n = 0, len, loc = 0;
 	char *str, buf[BUFSIZ];
 
-	read(fd, &len, sizeof(int));
+	n = read(fd, &len, sizeof(int));
+	if (n != sizeof(int))
+		return 0;
 	str = malloc(len);
 	while ((n = read(fd, buf, BUFSIZ < len ? BUFSIZ : len)) > 0) {
 		strncpy(&str[loc], buf, n);
