@@ -177,7 +177,7 @@ char *read_to_str(int fd)
 
 	n = read(fd, &len, sizeof(int));
 	if (n != sizeof(int))
-		return ERR_PTR(-EINVAL);
+		return ERR_PTR(-EIO);
 	str = malloc(len);
 	while ((n = read(fd, buf, BUFSIZ < len ? BUFSIZ : len)) > 0) {
 		strncpy(&str[loc], buf, n);

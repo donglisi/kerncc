@@ -10,7 +10,8 @@
 #include <string.h>
 #include <pthread.h>
 
-#include "utils.h"
+#include <linux/err.h>
+#include <utils.h>
 
 static int verbose = 0;
 
@@ -69,6 +70,11 @@ void *cc_thread(void *arg)
 	char buf[BUFSIZ], *cmd, **args, *odir, *opath, *dpath;
 
 	cmd = read_to_str(connfd);
+	if (IS_ERR(cmd)) {
+		printf("read_to_str error\n");
+		return 0;
+	}
+
 	if(verbose)
 		printf("%s\n", cmd);
 
