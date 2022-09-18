@@ -18,10 +18,9 @@
 
 void *gcc(void *arg)
 {
-	int connfd = *((int *)arg), fd, n, size, argc;
-	char buf[BUFSIZ], *cmd, **args, *dirpath, *opath, *dpath;
+	int connfd = *((int *)arg), fd, n, size, argc, wstatus, erroutfd[2];
+	char buf[BUFSIZ], *cmd, **args, *dirpath, *opath, *dpath, *epath;
 	pid_t pid;
-	int wstatus;
 
 	cmd = read_to_str(connfd);
 	args = get_args(cmd);
@@ -31,10 +30,35 @@ void *gcc(void *arg)
 	dirname1(opath, &dirpath);
 	mkdir_recursion(dirpath);
 
+	pipe(erroutfd);
 	pid = fork();
-	if (!pid)
+	if (!pid) {
+		close(erroutfd[0]);
+		dup2(erroutfd[1], STDERR_FILENO);
 		execvp(args[0], args);
+	}
+	close(erroutfd[1]);
 	waitpid(pid, &wstatus, 0);
+
+	WIFEXITED(wstatus);
+	int es = WEXITSTATUS(wstatus);
+	if (es) {
+		printf("%s\n", cmd);
+		write(connfd, &es, sizeof(int));
+		get_epath(argc, args, &epath);
+		fd = open(epath, O_CREAT | O_RDWR, 0644);
+		while ((n = read(erroutfd[1], buf, BUFSIZ)) > 0)
+			if (write(fd, buf, n) != n)
+				printf("write error\n");
+		size = lseek(fd, 0, SEEK_END);
+		write(connfd, &size, sizeof(int));
+		lseek(fd, 0, SEEK_SET);
+		while ((n = read(fd, buf, BUFSIZ)) > 0)
+			if (write(connfd, buf, n) != n)
+				printf("write error\n");
+		close(fd);
+	}
+	close(erroutfd[0]);
 
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
@@ -48,7 +72,6 @@ void *gcc(void *arg)
 	size = get_file_size(dpath);
 	write(connfd, &size, sizeof(int));
 	fd = open(dpath, O_RDONLY);
-	free(dpath);
 	while ((n = read(fd, buf, BUFSIZ)) > 0)
 		if (write(connfd, buf, n) != n)
 			printf("write error\n");
@@ -56,10 +79,13 @@ void *gcc(void *arg)
 
 	for (int i = 1; i < argc; i++)
 		free(args[i]);
+	free(epath);
+	free(dpath);
 	free(dirpath);
 	free(args);
-	close(connfd);
 	free(arg);
+
+	close(connfd);
 }
 
 int main(int argc, char *argv[])

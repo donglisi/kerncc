@@ -12,3 +12,4 @@ void print_cmd(char **args);
 void mkdir_recursion(char *path);
 void dirname1(char *path, char **dir);
 char *basename1(char *path, char **name);
+void get_epath(int argc, char **argv, char **epath);
