@@ -17,7 +17,7 @@
 extern char cc[];
 
 bool check_is_cc(int argc, char **argv);
-int native_cc(char argc, char **argv);
+int native_cc(int argc, char **argv);
 
 bool need_remote_cc(int argc, char **argv)
 {
@@ -101,7 +101,7 @@ compile_error:
 	return ret;
 }
 
-int native_cc(char argc, char **argv)
+int native_cc(int argc, char **argv)
 {
 	char **args;
 
