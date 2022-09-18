@@ -160,7 +160,7 @@ int get_file_size(char *path)
 	return statbuf.st_size;
 }
 
-int EndsWith(const char *str, const char *suffix)
+int end_with(const char *str, const char *suffix)
 {
 	if (!str || !suffix)
 		return 0;

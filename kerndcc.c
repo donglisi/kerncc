@@ -24,10 +24,8 @@ bool need_remote_cc(int argc, char **argv)
 	if (check_is_cc(argc, argv)) {
 		if (get_file_size(argv[argc - 1]) > 500) {
 			srand(time(NULL) + getpid());
-			if (rand() % 100 > 20)
+			if (rand() % 100 > 50)
 				return true;
-			else
-				return false;
 		}
 	}
 
@@ -49,7 +47,7 @@ int get_sockfd()
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(5000);
 
-	if (inet_pton(AF_INET, "192.168.1.3", &serv_addr.sin_addr) <= 0) {
+	if (inet_pton(AF_INET, "192.168.1.2", &serv_addr.sin_addr) <= 0) {
 		printf("inet_pton error occured\n");
 		return -1;
 	}
@@ -122,7 +120,10 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
-static char *paths[] = { // compile native only
+/*
+ * compile native only
+ */
+static char *paths[] = {
 			"/arch/x86/boot",
 			"/arch/x86/entry",
 			"/drivers/scsi/",
@@ -134,21 +135,23 @@ static char *paths[] = { // compile native only
 			"/arch/x86/lib/inat.c",
 			"/lib/oid_registry.c",
 			"/lib/crc",
+			"/init/version.c",
 			"/lib/zstd/common",
 			NULL};
 
 bool check_is_cc(int argc, char **argv)
 {
 	int i;
+	char *cpath = argv[argc - 1];
 
-	if (!EndsWith(argv[argc - 1], ".c"))
+	if (!end_with(cpath, ".c"))
 		return false;
 
-	if (argv[argc - 1][0] != '/')
+	if (cpath[0] != '/')
 		return false;
 
 	for (i = 0; paths[i]; i++)
-		if (strstr(argv[argc - 1], paths[i]))
+		if (strstr(cpath, paths[i]))
 			return false;
 
 	return true;
