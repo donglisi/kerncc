@@ -16,65 +16,21 @@
 
 extern char cc[];
 
-bool check_is_cc(int argc, char **argv)
+bool check_is_cc(int argc, char **argv);
+
+bool need_remote_cc(int argc, char **argv)
 {
-	int i;
-
-	if (!EndsWith(argv[argc - 1], ".c"))
-		return false;
-
-	if (argv[argc - 1][0] != '/')
-		return false;
-
-	if (strstr(argv[argc - 1], "/arch/x86/boot"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/arch/x86/entry"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/drivers/scsi/"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/drivers/gpu/drm/radeon/"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/crypto"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/security/selinux"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/security/keys/trusted-keys/trusted_tpm2.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/kernel/configs.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/arch/x86/lib/inat.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/lib/oid_registry.c"))
-		return false;
-
-	if (strstr(argv[argc - 1], "/lib/crc"))
-		return false;
-
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-c", argv[i])) {
-			return true;
+	if (check_is_cc(argc, argv)) {
+		if (get_file_size(argv[argc - 1]) > 500) {
+			srand(time(NULL) + getpid());
+			if (rand() % 100 > 20)
+				return true;
+			else
+				return false;
 		}
 	}
+
 	return false;
-}
-
-int native_cc(char argc, char **argv)
-{
-	char **args;
-
-	args = argc_argv_to_args(argc, argv);
-	args[0] = cc;
-
-	return execvp(args[0], args);
 }
 
 int get_sockfd()
@@ -144,20 +100,14 @@ compile_error:
 	return ret;
 }
 
-bool need_remote_cc(int argc, char **argv)
+int native_cc(char argc, char **argv)
 {
-	return true;
-	if (check_is_cc(argc, argv)) {
-		if (get_file_size(argv[argc - 1]) > 1000) {
-			srand(time(NULL) + getpid());
-			if (rand() % 8 > 2)
-				return true;
-			else
-				return false;
-		}
-	}
+	char **args;
 
-	return false;
+	args = argc_argv_to_args(argc, argv);
+	args[0] = cc;
+
+	return execvp(args[0], args);
 }
 
 int main(int argc, char *argv[])
@@ -169,4 +119,55 @@ int main(int argc, char *argv[])
 	else
 		ret = native_cc(argc, argv);
 	return ret;
+}
+
+bool check_is_cc(int argc, char **argv)
+{
+	int i;
+
+	if (!EndsWith(argv[argc - 1], ".c"))
+		return false;
+
+	if (argv[argc - 1][0] != '/')
+		return false;
+
+	if (strstr(argv[argc - 1], "/arch/x86/boot"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/arch/x86/entry"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/drivers/scsi/"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/drivers/gpu/drm/radeon/"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/crypto"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/security/selinux"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/security/keys/trusted-keys/trusted_tpm2.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/kernel/configs.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/arch/x86/lib/inat.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/lib/oid_registry.c"))
+		return false;
+
+	if (strstr(argv[argc - 1], "/lib/crc"))
+		return false;
+
+	for (i = 0; i < argc; i++) {
+		if (!strcmp("-c", argv[i])) {
+			return true;
+		}
+	}
+	return false;
 }

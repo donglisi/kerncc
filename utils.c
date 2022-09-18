@@ -10,8 +10,8 @@
 
 #include "utils.h"
 
-// char cc[] = "/usr/bin/gcc";
-char cc[] = "/usr/lib64/ccache/gcc";
+char cc[] = "/usr/bin/gcc";
+// char cc[] = "/usr/lib64/ccache/gcc";
 
 char *get_cmd(int argc, char **argv)
 {
