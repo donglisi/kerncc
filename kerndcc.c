@@ -69,7 +69,7 @@ bool check_is_cc(int argc, char **argv)
 	return false;
 }
 
-int gcc(char argc, char **argv)
+int native_cc(char argc, char **argv)
 {
 	char *args[argc + 1];
 
@@ -111,14 +111,14 @@ int get_sockfd()
 	return sockfd;
 }
 
-int distcc(int argc, char **argv)
+int remote_cc(int argc, char **argv)
 {
 	int sockfd, i, fd, n, len, es;
 	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
 	if (sockfd == -1)
-		gcc(argc, argv);
+		native_cc(argc, argv);
 
 	cmd = get_cmd(argc, argv);
 
@@ -166,8 +166,8 @@ int main(int argc, char *argv[])
 	int ret;
 
 	if (need_remote_cc(argc, argv))
-		ret = distcc(argc, argv);
+		ret = remote_cc(argc, argv);
 	else
-		ret = gcc(argc, argv);
+		ret = native_cc(argc, argv);
 	return ret;
 }
