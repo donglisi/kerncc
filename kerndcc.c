@@ -71,21 +71,17 @@ bool check_is_cc(int argc, char **argv)
 
 int native_cc(char argc, char **argv)
 {
-	char *args[argc + 1];
+	char **args;
 
-	for (int i = 1; i < argc; i++) {
-		args[i] = malloc(strlen(argv[i]) + 1);
-		strcpy(args[i], argv[i]);
-	}
+	args = argc_argv_to_args(argc, argv);
 	args[0] = cc;
-	args[argc] = NULL;
 
 	return execvp(args[0], args);
 }
 
 int get_sockfd()
 {
-	int sockfd = 0;
+	int sockfd;
 	struct sockaddr_in serv_addr;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -121,6 +117,7 @@ int remote_cc(int argc, char **argv)
 		native_cc(argc, argv);
 
 	cmd = get_cmd(argc, argv);
+	args = argc_argv_to_args(argc, argv);
 
 	write_from_str(sockfd, cmd);
 
@@ -130,12 +127,12 @@ int remote_cc(int argc, char **argv)
 		return es;
 	}
 
-	get_opath(argc, argv, &opath);
+	get_opath(args, &opath);
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
 	read_to_fd(sockfd, fd);
 	close(fd);
 
-	get_dpath(argc, argv, &dpath);
+	get_dpath(args, &dpath);
 	fd = open(dpath, O_CREAT | O_WRONLY, 0644);
 	read_to_fd(sockfd, fd);
 	close(fd);

@@ -240,3 +240,15 @@ char *basename1(char *path, char **name)
 	strcpy(*name, tmp);
 	free(copy);
 }
+
+char **argc_argv_to_args(char argc, char **argv)
+{
+	char **args;
+
+	args = calloc(sizeof(void*), argc + 1);
+	for (int i = 0; i < argc; i++)
+		args[i] = argv[i];
+	args[argc] = NULL;
+	return args;
+}
+
