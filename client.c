@@ -69,7 +69,7 @@ bool check_is_cc(int argc, char **argv)
 	return false;
 }
 
-void gcc(char argc, char **argv)
+int gcc(char argc, char **argv)
 {
 	char *args[argc + 1];
 
@@ -80,7 +80,7 @@ void gcc(char argc, char **argv)
 	args[0] = cc;
 	args[argc] = NULL;
 
-	execvp(args[0], args);
+	return execvp(args[0], args);
 }
 
 int get_sockfd()
@@ -111,9 +111,9 @@ int get_sockfd()
 	return sockfd;
 }
 
-void distcc(int argc, char **argv)
+int distcc(int argc, char **argv)
 {
-	int sockfd, i, fd, n, len;
+	int sockfd, i, fd, n, len, es;
 	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
@@ -123,6 +123,12 @@ void distcc(int argc, char **argv)
 	cmd = get_cmd(argc, argv);
 
 	write_from_str(sockfd, cmd);
+
+	read(sockfd, &es, sizeof(int));
+	if(es < 0) {
+		read_to_fd(sockfd, STDERR_FILENO);
+		return es;
+	}
 
 	get_opath(argc, argv, &opath);
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
@@ -135,6 +141,8 @@ void distcc(int argc, char **argv)
 	close(fd);
 
 	free(cmd);
+
+	return 0;
 }
 
 bool need_remote_cc(int argc, char **argv)
@@ -155,9 +163,11 @@ bool need_remote_cc(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
+	int ret;
+
 	if (need_remote_cc(argc, argv))
-		distcc(argc, argv);
+		ret = distcc(argc, argv);
 	else
-		gcc(argc, argv);
-	return 0;
+		ret = gcc(argc, argv);
+	return ret;
 }
