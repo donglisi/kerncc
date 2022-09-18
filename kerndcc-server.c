@@ -66,7 +66,7 @@ int native_cc(int connfd, char **args)
 
 void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, fd, n, size, ret = 0;
+	int connfd = *((int *)arg), i, fd, n, size;
 	char buf[BUFSIZ], *cmd, **args, *odir, *opath, *dpath;
 
 	cmd = read_to_str(connfd);
@@ -79,10 +79,8 @@ void *cc_thread(void *arg)
 	dirname1(opath, &odir);
 	mkdir_recursion(odir);
 
-	if (native_cc(connfd, args)) {
-		ret = -1;
+	if (native_cc(connfd, args))
 		goto compile_error;
-	}
 
 	size = get_file_size(opath);
 	write(connfd, &size, sizeof(int));
@@ -110,7 +108,7 @@ compile_error:
 	free(odir);
 
 	close(connfd);
-	return ret;
+	return 0;
 }
 
 int main(int argc, char *argv[])
