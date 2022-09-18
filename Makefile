@@ -1,8 +1,8 @@
 CC	:= gcc
 
-OBJS := kerndcc.o kerndcc-server.o utils.o
+OBJS	:= kerndcc.o kerndcc-server.o utils.o
 
-CFLAGS	= -nostdinc -I/usr/x86_64-linux-musl/include -Iinclude -g
+CFLAGS	:= -nostdinc -I/usr/x86_64-linux-musl/include -Iinclude -g
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@

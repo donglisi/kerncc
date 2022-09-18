@@ -1,7 +1,7 @@
 #ifndef LINUX_TYPES_H
 #define LINUX_TYPES_H
 
-#include <kvm/compiler.h>
+// #include <kvm/compiler.h>
 #define __SANE_USERSPACE_TYPES__	/* For PPC64, to get LL64 types */
 #include <asm/types.h>
 

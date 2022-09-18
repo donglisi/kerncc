@@ -1,3 +1,6 @@
 .gdb_history
 kerndcc
 kerndcc-server
+kerndcc-server.o
+kerndcc.o
+utils.o

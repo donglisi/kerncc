@@ -8,8 +8,8 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "err.h"
-#include "utils.h"
+#include <linux/err.h>
+#include <utils.h>
 
 char cc[] = "/usr/bin/gcc";
 // char cc[] = "/usr/lib64/ccache/gcc";
@@ -177,7 +177,7 @@ char *read_to_str(int fd)
 
 	n = read(fd, &len, sizeof(int));
 	if (n != sizeof(int))
-		return 0;
+		return ERR_PTR(-EINVAL);
 	str = malloc(len);
 	while ((n = read(fd, buf, BUFSIZ < len ? BUFSIZ : len)) > 0) {
 		strncpy(&str[loc], buf, n);
