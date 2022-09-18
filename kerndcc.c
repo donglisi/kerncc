@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include "utils.h"
+#include <utils.h>
 
 extern char cc[];
 
@@ -150,12 +150,6 @@ bool check_is_cc(int argc, char **argv)
 	for (i = 0; paths[i]; i++)
 		if (strstr(argv[argc - 1], paths[i]))
 			return false;
-/*
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-c", argv[i])) {
-			return true;
-		}
-	}
-*/
+
 	return true;
 }

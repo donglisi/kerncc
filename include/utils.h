@@ -12,4 +12,4 @@ void print_args(char **args);
 void mkdir_recursion(char *path);
 void dirname1(char *path, char **dir);
 char *basename1(char *path, char **name);
-char **argc_argv_to_args(char argc, char **argv);
+char **argc_argv_to_args(int argc, char **argv);

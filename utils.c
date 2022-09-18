@@ -76,12 +76,13 @@ char **get_args(char *cmd)
 	return args;
 }
 
-char **argc_argv_to_args(char argc, char **argv)
+char **argc_argv_to_args(int argc, char **argv)
 {
+	int i;
 	char **args;
 
 	args = calloc(sizeof(void*), argc + 1);
-	for (int i = 0; i < argc; i++)
+	for (i = 0; i < argc; i++)
 		args[i] = argv[i];
 	args[argc] = NULL;
 	return args;
