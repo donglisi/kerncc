@@ -64,8 +64,8 @@ static int write_file_to_client(int connfd, char *path)
 
 static void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, fd, size;
-	char buf[BUFSIZ], *cmd, **args, *kbdir, *odir, *opath, *dpath;
+	int connfd = *((int *)arg), i, fd;
+	char *cmd, **args, *kbdir, *odir, *opath, *dpath;
 
 	kbdir = read_to_str(connfd);
 	if (IS_ERR(kbdir)) {
@@ -111,7 +111,6 @@ error:
 int main(int argc, char *argv[])
 {
 	int listenfd = 0, *connfd, option = 1;
-	char *pwd;
 	struct sockaddr_in serv_addr;
 	pthread_t t;
 

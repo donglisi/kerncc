@@ -87,7 +87,6 @@ static int get_sockfd()
 	}
 
 	memset(&serv_addr, '0', sizeof(serv_addr));
-
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(5000);
 
