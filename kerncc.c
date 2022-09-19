@@ -14,14 +14,56 @@
 
 #include <utils.h>
 
-extern char *cc;
-extern int value_size;
-extern int balance;
+static char gcc[] = "gcc";
+static char *cc;
+static int value_size;
+static int balance;
 
-bool check_is_cc(int argc, char **argv);
-int native_cc(int argc, char **argv);
+static void __attribute__ ((constructor)) __init__cc(void)
+{
+	if (getenv("KERNCC"))
+		cc = getenv("KERNCC");
+	else
+		cc = gcc;
 
-bool need_remote_cc(int argc, char **argv)
+	if (getenv("KERNCC_SIZE"))
+		value_size = atoi(getenv("KERNCC_SIZE"));
+	else
+		value_size = 1000;
+
+	if (getenv("KERNCC_BALANCE"))
+		balance = atoi(getenv("KERNCC_BALANCE"));
+	else
+		balance = 55;
+}
+
+static char *get_cmd(int argc, char **argv)
+{
+	int i, loc, size;
+	char *cmd;
+
+	size = strlen(cc) + 1;
+	for (i = 1; i < argc; i++)
+		size += strlen(argv[i]) + 1;
+
+	cmd = malloc(size);
+	strcpy(cmd, cc);
+	loc = strlen(cc);
+	cmd[loc++] = ' ';
+	for (i = 1; i < argc; i++) {
+		strcpy(&cmd[loc], argv[i]);
+		loc += strlen(argv[i]);
+		cmd[loc++] = ' ';
+	}
+	cmd[size - 1] = 0;
+
+	return cmd;
+}
+
+static bool check_is_cc(int argc, char **argv);
+static int native_cc(int argc, char **argv);
+
+static bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
 		if (get_file_size(argv[argc - 1]) > value_size) {
@@ -34,7 +76,7 @@ bool need_remote_cc(int argc, char **argv)
 	return false;
 }
 
-int get_sockfd()
+static int get_sockfd()
 {
 	int sockfd;
 	struct sockaddr_in serv_addr;
@@ -62,7 +104,7 @@ int get_sockfd()
 	return sockfd;
 }
 
-int remote_cc(int argc, char **argv)
+static int remote_cc(int argc, char **argv)
 {
 	int sockfd, i, fd, n, len, es, ret = 0;
 	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
@@ -102,7 +144,7 @@ remote_compile_error:
 	return ret;
 }
 
-int native_cc(int argc, char **argv)
+static int native_cc(int argc, char **argv)
 {
 	char **args;
 
@@ -123,7 +165,7 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
-bool check_is_cc(int argc, char **argv)
+static bool check_is_cc(int argc, char **argv)
 {
 	int i;
 	char *cpath = argv[argc - 1], *line, *s;

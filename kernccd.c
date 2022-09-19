@@ -13,7 +13,7 @@
 #include <linux/err.h>
 #include <utils.h>
 
-int native_cc(int connfd, char **args)
+static int native_cc(int connfd, char **args)
 {
 	int fd, wstatus, es, n;
 	pid_t pid;
@@ -42,7 +42,7 @@ int native_cc(int connfd, char **args)
 	return 0;
 }
 
-int write_file_to_client(int connfd, char *path)
+static int write_file_to_client(int connfd, char *path)
 {
 	int fd, size, ret = 0;
 
@@ -62,7 +62,7 @@ int write_file_to_client(int connfd, char *path)
 	return ret;
 }
 
-void *cc_thread(void *arg)
+static void *cc_thread(void *arg)
 {
 	int connfd = *((int *)arg), i, fd, size;
 	char buf[BUFSIZ], *cmd, **args, *kbdir, *odir, *opath, *dpath;

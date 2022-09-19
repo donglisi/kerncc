@@ -11,52 +11,6 @@
 #include <linux/err.h>
 #include <utils.h>
 
-char gcc[] = "gcc";
-char *cc;
-int value_size;
-int balance;
-
-static void __attribute__ ((constructor)) __init__cc(void)
-{
-	if (getenv("KERNCC"))
-		cc = getenv("KERNCC");
-	else
-		cc = gcc;
-
-	if (getenv("KERNCC_SIZE"))
-		value_size = atoi(getenv("KERNCC_SIZE"));
-	else
-		value_size = 1000;
-
-	if (getenv("KERNCC_BALANCE"))
-		balance = atoi(getenv("KERNCC_BALANCE"));
-	else
-		balance = 55;
-}
-
-char *get_cmd(int argc, char **argv)
-{
-	int i, loc, size;
-	char *cmd;
-
-	size = strlen(cc) + 1;
-	for (i = 1; i < argc; i++)
-		size += strlen(argv[i]) + 1;
-
-	cmd = malloc(size);
-	strcpy(cmd, cc);
-	loc = strlen(cc);
-	cmd[loc++] = ' ';
-	for (i = 1; i < argc; i++) {
-		strcpy(&cmd[loc], argv[i]);
-		loc += strlen(argv[i]);
-		cmd[loc++] = ' ';
-	}
-	cmd[size - 1] = 0;
-
-	return cmd;
-}
-
 char **get_args(char *cmd)
 {
 	int i, j, len, loc, argc, cmd_len, *arg_lens;

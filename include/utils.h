@@ -1,4 +1,3 @@
-char *get_cmd(int argc, char **argv);
 char *read_to_str(int fd);
 char **get_args(char *cmd);
 char **argc_argv_to_args(int argc, char **argv);
