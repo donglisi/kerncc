@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	pthread_t t;
 
+	signal(SIGPIPE, SIG_IGN);
+
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
