@@ -15,7 +15,7 @@
 
 int native_cc(int connfd, char **args)
 {
-	int fd, wstatus, es;
+	int fd, wstatus, es, n;
 	pid_t pid;
 
 	pid = fork();
@@ -27,7 +27,9 @@ int native_cc(int connfd, char **args)
 	waitpid(pid, &wstatus, 0);
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
-	write(connfd, &es, sizeof(int));
+	n = write(connfd, &es, sizeof(int));
+	if (n < 0)
+		return -1;
 
 	/* if compile faile */
 	if (es) {
@@ -38,9 +40,29 @@ int native_cc(int connfd, char **args)
 	return 0;
 }
 
+int write_file_to_client(int connfd, char *path)
+{
+	int fd, size, ret = 0;
+
+	size = get_file_size(path);
+	if (write(connfd, &size, sizeof(int)) < 0) {
+		printf("write %s size to connfd error\n", path);
+		return -1;
+	}
+
+	fd = open(path, O_RDONLY);
+	if (write_to_fd(fd, connfd)) {
+		printf("write %s file to connfd error\n", path);
+		ret = -2;
+	}
+	close(fd);
+
+	return ret;
+}
+
 void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, fd, n, size;
+	int connfd = *((int *)arg), i, fd, size;
 	char buf[BUFSIZ], *cmd, **args, *kbdir, *odir, *opath, *dpath;
 
 	kbdir = read_to_str(connfd);
@@ -62,23 +84,16 @@ void *cc_thread(void *arg)
 	mkdir_recursion(odir);
 
 	if (native_cc(connfd, args))
-		goto compile_error;
+		goto error;
 
-	size = get_file_size(opath);
-	n = write(connfd, &size, sizeof(int));
-	fd = open(opath, O_RDONLY);
-	write_to_fd(fd, connfd);
-	close(fd);
+	if (write_file_to_client(connfd, opath))
+		goto error;
 
 	get_dpath(args, &dpath);
-	size = get_file_size(dpath);
-	n = write(connfd, &size, sizeof(int));
-	fd = open(dpath, O_RDONLY);
-	write_to_fd(fd, connfd);
-	close(fd);
+	write_file_to_client(connfd, dpath);
 	free(dpath);
 
-compile_error:
+error:
 	for (i = 0; args[i]; i++)
 		free(args[i]);
 	free(args);
