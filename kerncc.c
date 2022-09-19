@@ -15,6 +15,8 @@
 #include <utils.h>
 
 extern char *cc;
+extern int value_size;
+extern int balance;
 
 bool check_is_cc(int argc, char **argv);
 int native_cc(int argc, char **argv);
@@ -22,9 +24,9 @@ int native_cc(int argc, char **argv);
 bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
-		if (get_file_size(argv[argc - 1]) > 1000) {
+		if (get_file_size(argv[argc - 1]) > value_size) {
 			srand(time(NULL) + getpid());
-			if (rand() % 100 > 55)
+			if (rand() % 100 > balance)
 				return true;
 		}
 	}
