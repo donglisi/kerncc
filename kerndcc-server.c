@@ -66,7 +66,7 @@ void *cc_thread(void *arg)
 	char buf[BUFSIZ], *cmd, **args, *kbdir, *odir, *opath, *dpath;
 
 	kbdir = read_to_str(connfd);
-	if (IS_ERR(cmd)) {
+	if (IS_ERR(kbdir)) {
 		printf("read_to_str error kbdir\n");
 		return 0;
 	}
