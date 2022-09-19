@@ -221,6 +221,18 @@ void read_to_fd(int infd, int outfd)
 	}
 }
 
+void write_to_fd(int infd, int outfd)
+{
+	int n, size;
+	char buf[BUFSIZ];
+
+	while ((n = read(infd, buf, BUFSIZ)) > 0) {
+		size = n;
+		while ((size -= write(outfd, &buf[n - size], size)) > 0)
+			;
+	}
+}
+
 void dirname1(char *path, char **dir)
 {
 	char *copy, *tmp;

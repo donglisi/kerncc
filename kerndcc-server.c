@@ -67,18 +67,14 @@ void *cc_thread(void *arg)
 	size = get_file_size(opath);
 	n = write(connfd, &size, sizeof(int));
 	fd = open(opath, O_RDONLY);
-	while ((n = read(fd, buf, BUFSIZ)) > 0)
-		if (write(connfd, buf, n) != n)
-			printf("write error\n");
+	write_to_fd(fd, connfd);
 	close(fd);
 
 	get_dpath(args, &dpath);
 	size = get_file_size(dpath);
 	n = write(connfd, &size, sizeof(int));
 	fd = open(dpath, O_RDONLY);
-	while ((n = read(fd, buf, BUFSIZ)) > 0)
-		if (write(connfd, buf, n) != n)
-			printf("write error\n");
+	write_to_fd(fd, connfd);
 	close(fd);
 	free(dpath);
 
