@@ -28,8 +28,10 @@ int native_cc(int connfd, char **args)
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
 	n = write(connfd, &es, sizeof(int));
-	if (n < 0)
+	if (n < 0) {
+		printf("write es %d to connfd error\n", es);
 		return -1;
+	}
 
 	/* if compile faile */
 	if (es) {
