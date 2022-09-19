@@ -8,6 +8,7 @@ int end_with(const char *str, const char *suffix);
 char *read_to_str(int fd);
 void write_from_str(int fd, char *str);
 void read_to_fd(int infd, int outfd);
+void print_argv(int argc, char **argv);
 void print_args(char **args);
 void mkdir_recursion(char *path);
 void dirname1(char *path, char **dir);

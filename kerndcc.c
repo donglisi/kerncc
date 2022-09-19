@@ -21,6 +21,7 @@ int native_cc(int argc, char **argv);
 
 bool need_remote_cc(int argc, char **argv)
 {
+	return false;
 	if (check_is_cc(argc, argv)) {
 		return true;
 		if (get_file_size(argv[argc - 1]) > 500) {
@@ -137,7 +138,7 @@ bool check_is_cc(int argc, char **argv)
 
 	fp = fopen("./files", "r");
 	if (fp == NULL)
-		return false;
+		return true;
 	while (getline(&line, &len, fp) != -1) {
 		len = strlen(line);
 		line[len - 1] = 0;

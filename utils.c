@@ -88,12 +88,20 @@ char **argc_argv_to_args(int argc, char **argv)
 	return args;
 }
 
+void print_argv(int argc, char **argv)
+{
+	int i;
+
+	for (i = 0; i < argc; i++)
+		printf("%s ", argv[i]);
+	printf("\n");
+}
+
 void print_args(char **args)
 {
 	int i;
-	char *arg;
 
-	for (i = 0, arg = args[0]; args[i]; i++)
+	for (i = 0; args[i]; i++)
 		printf("%s ", args[i]);
 	printf("\n");
 }
