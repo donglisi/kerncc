@@ -21,12 +21,10 @@ int native_cc(int argc, char **argv);
 
 bool need_remote_cc(int argc, char **argv)
 {
-	return false;
 	if (check_is_cc(argc, argv)) {
-		return true;
-		if (get_file_size(argv[argc - 1]) > 500) {
+		if (get_file_size(argv[argc - 1]) > 1000) {
 			srand(time(NULL) + getpid());
-			if (rand() % 100 > 50)
+			if (rand() % 100 > 55)
 				return true;
 		}
 	}
