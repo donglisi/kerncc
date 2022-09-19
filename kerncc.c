@@ -106,8 +106,8 @@ static int get_sockfd()
 
 static int remote_cc(int argc, char **argv)
 {
-	int sockfd, i, fd, n, len, es, ret = 0;
-	char buf[BUFSIZ], *opath, *dpath, *cmd, **args;
+	int sockfd, fd, es, ret = 0;
+	char *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
 	if (sockfd == -1)
@@ -167,9 +167,8 @@ int main(int argc, char *argv[])
 
 static bool check_is_cc(int argc, char **argv)
 {
-	int i;
-	char *cpath = argv[argc - 1], *line, *s;
-	FILE * fp;
+	char *cpath = argv[argc - 1], *line;
+	FILE *fp;
 	size_t len = 0;
 
 	if (!end_with(cpath, ".c"))
@@ -184,7 +183,7 @@ static bool check_is_cc(int argc, char **argv)
 	while (getline(&line, &len, fp) != -1) {
 		len = strlen(line);
 		line[len - 1] = 0;
-		if (s = strstr(cpath, line)) {
+		if (strstr(cpath, line)) {
 			return false;
 		}
 	}
