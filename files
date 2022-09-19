@@ -1,0 +1,4 @@
+/lib/crc32.c
+/arch/x86/lib/inat.c
+/arch/x86/boot/cpu.c
+/arch/x86/boot/compressed/misc.c

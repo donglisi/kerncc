@@ -120,30 +120,10 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
-			//"/arch/x86/boot",
-/*
- * compile native only
- */
-static char *paths[] = {
-			"/arch/x86/boot/compressed/misc.c",
-			"/arch/x86/entry",
-			"/drivers/scsi/",
-			"/drivers/gpu/drm/radeon/",
-			"/crypto",
-			"/security/selinux",
-			"/security/keys/trusted-keys/trusted_tpm2.c",
-			"/kernel/configs.c",
-			"/arch/x86/lib/inat.c",
-			"/lib/oid_registry.c",
-			"/lib/crc",
-			"/init/version.c",
-			"/lib/zstd/common",
-			NULL};
-
 bool check_is_cc(int argc, char **argv)
 {
 	int i;
-	char *cpath = argv[argc - 1], *line;
+	char *cpath = argv[argc - 1], *line, *s;
 	FILE * fp;
 	size_t len = 0;
 
@@ -156,9 +136,13 @@ bool check_is_cc(int argc, char **argv)
 	fp = fopen("./files", "r");
 	if (fp == NULL)
 		return false;
-	while (getline(&line, &len, fp) != -1)
-		if (strstr(cpath, line))
+	while (getline(&line, &len, fp) != -1) {
+		len = strlen(line);
+		line[len - 1] = 0;
+		if (s = strstr(cpath, line)) {
 			return false;
+		}
+	}
 	fclose(fp);
 
 	return true;
