@@ -93,6 +93,8 @@ compile_error:
 	free(args);
 	free(arg);
 	free(odir);
+	free(cmd);
+	free(kbdir);
 
 	close(connfd);
 	return 0;
