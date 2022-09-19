@@ -162,20 +162,6 @@ void get_dpath(char **args, char **dpath)
 	free(name);
 }
 
-void get_epath(char **args, char **epath)
-{
-	int len;
-	char *opath;
-
-	get_opath(args, &opath);
-	len = strlen(opath);
-	get_opath(args, &opath);
-	*epath = malloc(len + 3);
-	strcpy(*epath, opath);
-	strcpy(&((*epath)[len]), ".e");
-	(*epath)[len + 2] = 0;
-}
-
 int get_file_size(char *path)
 {
 	int fd;
@@ -271,7 +257,7 @@ void dirname1(char *path, char **dir)
 	free(copy);
 }
 
-char *basename1(char *path, char **name)
+void basename1(char *path, char **name)
 {
 	char *copy, *tmp;
 

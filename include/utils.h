@@ -1,17 +1,18 @@
 char *get_cmd(int argc, char **argv);
+char *read_to_str(int fd);
 char **get_args(char *cmd);
-void get_opath(char **args, char **opath);
-void get_dpath(char **args, char **dpath);
-void get_epath(char **args, char **epath);
+char **argc_argv_to_args(int argc, char **argv);
+
 int get_file_size(char *path);
 int end_with(const char *str, const char *suffix);
-char *read_to_str(int fd);
+int write_to_fd(int infd, int outfd);
+
 void write_from_str(int fd, char *str);
 void read_to_fd(int infd, int outfd);
-int write_to_fd(int infd, int outfd);
 void print_argv(int argc, char **argv);
 void print_args(char **args);
-void mkdir_recursion(char *path);
 void dirname1(char *path, char **dir);
-char *basename1(char *path, char **name);
-char **argc_argv_to_args(int argc, char **argv);
+void basename1(char *path, char **name);
+void get_opath(char **args, char **opath);
+void get_dpath(char **args, char **dpath);
+void mkdir_recursion(char *path);
