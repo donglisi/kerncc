@@ -14,13 +14,14 @@
 
 #include <utils.h>
 
-extern char cc[];
+extern char *cc;
 
 bool check_is_cc(int argc, char **argv);
 int native_cc(int argc, char **argv);
 
 bool need_remote_cc(int argc, char **argv)
 {
+	return false;
 	if (check_is_cc(argc, argv)) {
 		return true;
 		if (get_file_size(argv[argc - 1]) > 500) {

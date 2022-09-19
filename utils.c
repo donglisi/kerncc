@@ -11,6 +11,7 @@
 #include <linux/err.h>
 #include <utils.h>
 
+char gcc[] = "gcc";
 char *cc;
 
 static void __attribute__ ((constructor)) __init__cc(void)
@@ -18,7 +19,7 @@ static void __attribute__ ((constructor)) __init__cc(void)
 	if (getenv("KERNCC"))
 		cc = getenv("KERNCC");
 	else
-		cc = "gcc";
+		cc = gcc;
 }
 
 char *get_cmd(int argc, char **argv)
