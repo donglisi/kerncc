@@ -22,6 +22,7 @@ int native_cc(int argc, char **argv);
 bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
+		return true;
 		if (get_file_size(argv[argc - 1]) > 500) {
 			srand(time(NULL) + getpid());
 			if (rand() % 100 > 50)
@@ -75,8 +76,7 @@ int remote_cc(int argc, char **argv)
 	write_from_str(sockfd, cmd);
 
 	read(sockfd, &es, sizeof(int));
-	if (es < 0) {
-		read_to_fd(sockfd, STDERR_FILENO);
+	if (es) {
 		ret = native_cc(argc, argv);
 		goto remote_compile_error;
 	}
@@ -120,11 +120,12 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
+			//"/arch/x86/boot",
 /*
  * compile native only
  */
 static char *paths[] = {
-			"/arch/x86/boot",
+			"/arch/x86/boot/compressed/misc.c",
 			"/arch/x86/entry",
 			"/drivers/scsi/",
 			"/drivers/gpu/drm/radeon/",
@@ -142,7 +143,9 @@ static char *paths[] = {
 bool check_is_cc(int argc, char **argv)
 {
 	int i;
-	char *cpath = argv[argc - 1];
+	char *cpath = argv[argc - 1], *line;
+	FILE * fp;
+	size_t len = 0;
 
 	if (!end_with(cpath, ".c"))
 		return false;
@@ -150,9 +153,13 @@ bool check_is_cc(int argc, char **argv)
 	if (cpath[0] != '/')
 		return false;
 
-	for (i = 0; paths[i]; i++)
-		if (strstr(cpath, paths[i]))
+	fp = fopen("./files", "r");
+	if (fp == NULL)
+		return false;
+	while (getline(&line, &len, fp) != -1)
+		if (strstr(cpath, line))
 			return false;
+	fclose(fp);
 
 	return true;
 }
