@@ -70,6 +70,8 @@ int remote_cc(int argc, char **argv)
 	if (sockfd == -1)
 		return native_cc(argc, argv);
 
+	write_from_str(sockfd, getenv("PWD"));
+
 	cmd = get_cmd(argc, argv);
 	args = argc_argv_to_args(argc, argv);
 
