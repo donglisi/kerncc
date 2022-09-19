@@ -13,8 +13,6 @@
 #include <linux/err.h>
 #include <utils.h>
 
-static int verbose = 0;
-
 int native_cc(int connfd, char **args)
 {
 	int fd, n, size, wstatus, es, errfd[2];
@@ -36,8 +34,7 @@ int native_cc(int connfd, char **args)
 
 	/* if compile faile */
 	if (es) {
-		if (!verbose)
-			print_args(args);
+		print_args(args);
 		return -1;
 	}
 
@@ -49,17 +46,20 @@ int native_cc(int connfd, char **args)
 void *cc_thread(void *arg)
 {
 	int connfd = *((int *)arg), i, fd, n, size;
-	char buf[BUFSIZ], *cmd, **args, *odir, *opath, *dpath;
+	char buf[BUFSIZ], *cmd, **args, *kbdir, *odir, *opath, *dpath;
+
+	kbdir = read_to_str(connfd);
+	if (IS_ERR(cmd)) {
+		printf("read_to_str error kbdir\n");
+		return 0;
+	}
+	chdir(kbdir);
 
 	cmd = read_to_str(connfd);
 	if (IS_ERR(cmd)) {
-		printf("read_to_str error\n");
+		printf("read_to_str error cmd\n");
 		return 0;
 	}
-
-	if(verbose)
-		printf("%s\n", cmd);
-
 	args = get_args(cmd);
 
 	get_opath(args, &opath);
@@ -104,13 +104,6 @@ int main(int argc, char *argv[])
 	char *pwd;
 	struct sockaddr_in serv_addr;
 	pthread_t t;
-
-	if (argc > 1)
-		verbose = 1;
-
-	pwd = getenv("KBUILD_DIR");
-	if (pwd)
-		chdir(pwd);
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
