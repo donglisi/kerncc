@@ -1,7 +1,7 @@
 # kerncc
 2台机一起编译Linux内核，kerncc是编译器的包装器，kernccd是接收编译任务的守护进程
 
-##
+#
 原理：<br/>
 1, 一台机用来正常编译内核，另一台机在make的过程中仅仅负责编译c语言源代码文件，源代码和.config需要在两台机的相同目录各一份。<br/>
 2, Linux内核的Makefile有一个名为parpare0的规则，另一台机上只需执行make parpare0并启动kernccd就可以开始接收编译任务。<br/>
