@@ -47,7 +47,7 @@ int write_file_to_client(int connfd, char *path)
 	int fd, size, ret = 0;
 
 	size = get_file_size(path);
-	if (write(connfd, &size, sizeof(int)) < 0) {
+	if (write(connfd, &size, sizeof(int)) != sizeof(int)) {
 		printf("write %s size to connfd error\n", path);
 		return -1;
 	}

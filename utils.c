@@ -193,6 +193,8 @@ char *read_to_str(int fd)
 		loc += n;
 		len -= n;
 	}
+	if (n < 0)
+		return ERR_PTR(-EIO);
 	return str;
 }
 
