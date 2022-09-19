@@ -11,8 +11,15 @@
 #include <linux/err.h>
 #include <utils.h>
 
-char cc[] = "/usr/bin/gcc";
-// char cc[] = "/usr/lib64/ccache/gcc";
+char *cc;
+
+static void __attribute__ ((constructor)) __init__cc(void)
+{
+	if (getenv("KERNCC"))
+		cc = getenv("KERNCC");
+	else
+		cc = "gcc";
+}
 
 char *get_cmd(int argc, char **argv)
 {
