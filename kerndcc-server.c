@@ -15,30 +15,25 @@
 
 int native_cc(int connfd, char **args)
 {
-	int fd, n, size, wstatus, es, errfd[2];
-	char buf[BUFSIZ], *epath;
+	int fd, wstatus, es;
 	pid_t pid;
 
-	pipe(errfd);
 	pid = fork();
+
 	if (!pid) {
-		close(errfd[0]);
-		dup2(errfd[1], STDERR_FILENO);
 		execvp(args[0], args);
 	}
-	close(errfd[1]);
+
 	waitpid(pid, &wstatus, 0);
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
-	n = write(connfd, &es, sizeof(int));
+	write(connfd, &es, sizeof(int));
 
 	/* if compile faile */
 	if (es) {
 		print_args(args);
 		return -1;
 	}
-
-	close(errfd[0]);
 
 	return 0;
 }
