@@ -1,6 +1,6 @@
 CC	:= gcc
 
-OBJS	:= kerncc.o kerncc-server.o utils.o
+OBJS	:= kerncc.o kernccd.o utils.o
 
 CFLAGS	:= -Iinclude -g
 
@@ -9,7 +9,7 @@ CFLAGS	:= -Iinclude -g
 
 all: $(OBJS)
 	gcc kerncc.o utils.o -o kerncc
-	gcc kerncc-server.o utils.o -o kerncc-server
+	gcc kernccd.o utils.o -o kernccd
 
 clean:
-	rm -f *.o kerncc kerncc-server 
+	rm -f *.o kerncc kernccd
