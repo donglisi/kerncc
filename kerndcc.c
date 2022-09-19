@@ -77,8 +77,8 @@ int remote_cc(int argc, char **argv)
 	read(sockfd, &es, sizeof(int));
 	if (es < 0) {
 		read_to_fd(sockfd, STDERR_FILENO);
-		ret = -1;
-		goto compile_error;
+		ret = native_cc(argc, argv);
+		goto remote_compile_error;
 	}
 
 	get_opath(args, &opath);
@@ -92,7 +92,7 @@ int remote_cc(int argc, char **argv)
 	close(fd);
 	free(dpath);
 
-compile_error:
+remote_compile_error:
 	free(cmd);
 	close(sockfd);
 

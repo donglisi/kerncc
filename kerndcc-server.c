@@ -38,24 +38,6 @@ int native_cc(int connfd, char **args)
 	if (es) {
 		if (!verbose)
 			print_args(args);
-
-		get_epath(args, &epath);
-
-		fd = open(epath, O_CREAT | O_RDWR, 0644);
-		while ((n = read(errfd[1], buf, BUFSIZ)) > 0)
-			if (write(fd, buf, n) != n)
-				printf("write error\n");
-
-		size = lseek(fd, 0, SEEK_END);
-		n = write(connfd, &size, sizeof(int));
-		lseek(fd, 0, SEEK_SET);
-		while ((n = read(fd, buf, BUFSIZ)) > 0)
-			if (write(connfd, buf, n) != n)
-				printf("write error\n");
-		close(fd);
-
-		remove(epath);
-		free(epath);
 		return -1;
 	}
 
