@@ -15,6 +15,7 @@
 
 #include <utils.h>
 
+static char server_ip[] = "192.168.1.2";
 static char gcc[] = "gcc";
 static char *cc;
 static int value_size;
@@ -22,10 +23,13 @@ static int balance;
 
 static void __attribute__ ((constructor)) __init__cc(void)
 {
-	if (getenv("KERNCC"))
-		cc = getenv("KERNCC");
+	if (getenv("KERNCC_CC"))
+		cc = getenv("KERNCC_CC");
 	else
 		cc = gcc;
+
+	if (getenv("KERNCC_IP"))
+		strcpy(server_ip, getenv("KERNCC_IP"));
 
 	if (getenv("KERNCC_SIZE"))
 		value_size = atoi(getenv("KERNCC_SIZE"));
@@ -91,7 +95,7 @@ static int get_sockfd()
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(5000);
 
-	if (inet_pton(AF_INET, "192.168.1.2", &serv_addr.sin_addr) <= 0)
+	if (inet_pton(AF_INET, server_ip, &serv_addr.sin_addr) <= 0)
 		return -1;
 
 	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)

@@ -42,7 +42,7 @@ static int native_cc(int connfd, char **args)
 
 static int write_file_to_client(int connfd, char *path)
 {
-	int fd, size, rn, wn, ret = 0;
+	int fd, size, rn, wn;
 	char buf[BUFSIZ];
 
 	size = get_file_size(path);
@@ -100,14 +100,14 @@ error:
 	free(odir);
 	free(cmd);
 	free(kbdir);
-
 	close(connfd);
+
 	return 0;
 }
 
 int main(int argc, char *argv[])
 {
-	int listenfd = 0, *connfd, option = 1;
+	int listenfd, *connfd, option = 1;
 	struct sockaddr_in serv_addr;
 	pthread_t t;
 
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 
 	bind(listenfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 
-	listen(listenfd, 10);
+	listen(listenfd, 64);
 
 	while (1) {
 		connfd = malloc(sizeof(int));
