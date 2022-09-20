@@ -59,6 +59,7 @@ char **argc_argv_to_args(int argc, char **argv)
 	for (i = 0; i < argc; i++)
 		args[i] = argv[i];
 	args[argc] = NULL;
+
 	return args;
 }
 
@@ -130,13 +131,18 @@ int get_file_size(char *path)
 
 int end_with(const char *str, const char *suffix)
 {
+	size_t lenstr, lensuffix;
+
 	if (!str || !suffix)
 		return 0;
-	size_t lenstr = strlen(str);
-	size_t lensuffix = strlen(suffix);
+
+	lenstr = strlen(str);
+	lensuffix = strlen(suffix);
+
 	if (lensuffix >  lenstr)
 		return 0;
-	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+
+	return !strncmp(str + lenstr - lensuffix, suffix, lensuffix);
 }
 
 char *read_to_str(int fd)
@@ -147,6 +153,7 @@ char *read_to_str(int fd)
 	n = read(fd, &len, sizeof(int));
 	if (n != sizeof(int))
 		return ERR_PTR(-EIO);
+
 	str = malloc(len);
 	while ((n = read(fd, buf, BUFSIZ < len ? BUFSIZ : len)) > 0) {
 		strncpy(&str[loc], buf, n);
@@ -155,6 +162,7 @@ char *read_to_str(int fd)
 	}
 	if (n < 0)
 		return ERR_PTR(-EIO);
+
 	return str;
 }
 
@@ -162,9 +170,10 @@ int write_from_str(int fd, char *str)
 {
 	int n, len = strlen(str) + 1, loc = 0;
 
-	write(fd, &len, sizeof(int));
+	n = write(fd, &len, sizeof(int));
 	if (n < 0)
 		return -1;
+
 	do {
 		n = write(fd, &str[loc], len);
 		if (n < 0)
@@ -172,6 +181,7 @@ int write_from_str(int fd, char *str)
 		loc += n;
 		len -= n;
 	} while (len > 0);
+
 	return 0;
 }
 
@@ -183,6 +193,7 @@ int read_to_fd(int infd, int outfd)
 	n = read(infd, &size, sizeof(int));
 	if (n < 0)
 		return -1;
+
 	while ((n = read(infd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
 		if (n < 0)
 			return -1;
