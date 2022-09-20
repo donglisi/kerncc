@@ -181,6 +181,7 @@ int main(int argc, char *argv[])
 		ret = remote_cc(argc, argv);
 	else
 		ret = native_cc(argc, argv);
+
 	return ret;
 }
 
