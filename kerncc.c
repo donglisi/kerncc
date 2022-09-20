@@ -81,7 +81,7 @@ static bool need_remote_cc(int argc, char **argv)
 	return false;
 }
 
-static int get_sockfd()
+static int get_sockfd(void)
 {
 	int sockfd;
 	struct sockaddr_in serv_addr;
