@@ -168,8 +168,9 @@ char *read_to_str(int fd)
 
 int write_from_str(int fd, char *str)
 {
-	int n, len = strlen(str) + 1, loc = 0;
+	int n, len, loc = 0;
 
+	len = strlen(str) + 1;
 	n = write(fd, &len, sizeof(int));
 	if (n < 0)
 		return -1;

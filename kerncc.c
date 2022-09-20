@@ -124,7 +124,7 @@ static int read_file_from_server(int sockfd, char *path)
 
 static int remote_cc(int argc, char **argv)
 {
-	int sockfd, fd, n, es;
+	int sockfd, n, es;
 	char *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
@@ -151,7 +151,6 @@ static int remote_cc(int argc, char **argv)
 	get_dpath(args, &dpath);
 	if (read_file_from_server(sockfd, dpath))
 		return native_cc(argc, argv);
-	close(fd);
 	free(dpath);
 
 	free(cmd);
