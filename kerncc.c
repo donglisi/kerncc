@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -34,7 +35,7 @@ static void __attribute__ ((constructor)) __init__cc(void)
 	if (getenv("KERNCC_BALANCE"))
 		balance = atoi(getenv("KERNCC_BALANCE"));
 	else
-		balance = 55;
+		balance = 50;
 }
 
 static char *get_cmd(int argc, char **argv)
@@ -170,6 +171,8 @@ static bool check_is_cc(int argc, char **argv)
 	char *cpath = argv[argc - 1], *line;
 	FILE *fp;
 	size_t len = 0;
+
+	signal(SIGPIPE, SIG_IGN);
 
 	if (!end_with(cpath, ".c"))
 		return false;
