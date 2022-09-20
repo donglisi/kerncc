@@ -105,42 +105,43 @@ static int get_sockfd()
 
 static int remote_cc(int argc, char **argv)
 {
-	int sockfd, fd, es, ret = 0;
+	int sockfd, fd, n, es;
 	char *opath, *dpath, *cmd, **args;
 
 	sockfd = get_sockfd();
 	if (sockfd == -1)
 		return native_cc(argc, argv);
 
-	write_from_str(sockfd, getenv("PWD"));
+	if (write_from_str(sockfd, getenv("PWD")))
+		return native_cc(argc, argv);
 
 	cmd = get_cmd(argc, argv);
 	args = argc_argv_to_args(argc, argv);
 
-	write_from_str(sockfd, cmd);
+	if (write_from_str(sockfd, cmd))
+		return native_cc(argc, argv);
 
-	read(sockfd, &es, sizeof(int));
-	if (es) {
-		ret = native_cc(argc, argv);
-		goto remote_compile_error;
-	}
+	n = read(sockfd, &es, sizeof(int));
+	if (n < 0 || es != 0)
+		return native_cc(argc, argv);
 
 	get_opath(args, &opath);
 	fd = open(opath, O_CREAT | O_WRONLY, 0644);
-	read_to_fd(sockfd, fd);
+	if (read_to_fd(sockfd, fd))
+		return native_cc(argc, argv);
 	close(fd);
 
 	get_dpath(args, &dpath);
 	fd = open(dpath, O_CREAT | O_WRONLY, 0644);
-	read_to_fd(sockfd, fd);
+	if (read_to_fd(sockfd, fd))
+		return native_cc(argc, argv);
 	close(fd);
 	free(dpath);
 
-remote_compile_error:
 	free(cmd);
 	close(sockfd);
 
-	return ret;
+	return 0;
 }
 
 static int native_cc(int argc, char **argv)

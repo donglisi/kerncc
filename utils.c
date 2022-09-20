@@ -158,29 +158,37 @@ char *read_to_str(int fd)
 	return str;
 }
 
-void write_from_str(int fd, char *str)
+int write_from_str(int fd, char *str)
 {
 	int n, len = strlen(str) + 1, loc = 0;
 
 	write(fd, &len, sizeof(int));
 	do {
 		n = write(fd, &str[loc], len);
+		if (n < 0)
+			return -1;
 		loc += n;
 		len -= n;
 	} while (len > 0);
+	return 0;
 }
 
-void read_to_fd(int infd, int outfd)
+int read_to_fd(int infd, int outfd)
 {
 	int n, size;
 	char buf[BUFSIZ];
 
 	n = read(infd, &size, sizeof(int));
+	if (n < 0)
+		return -1;
 	while ((n = read(infd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
 		size -= n;
 		if (write(outfd, buf, n) != n)
 			printf("write error %d\n", n);
 	}
+	if (n < 0)
+		return -1;
+	return 0;
 }
 
 int write_to_fd(int infd, int outfd)

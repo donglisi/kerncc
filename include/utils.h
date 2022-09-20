@@ -5,9 +5,9 @@ char **argc_argv_to_args(int argc, char **argv);
 int get_file_size(char *path);
 int end_with(const char *str, const char *suffix);
 int write_to_fd(int infd, int outfd);
+int write_from_str(int fd, char *str);
+int read_to_fd(int infd, int outfd);
 
-void write_from_str(int fd, char *str);
-void read_to_fd(int infd, int outfd);
 void print_argv(int argc, char **argv);
 void print_args(char **args);
 void dirname1(char *path, char **dir);
