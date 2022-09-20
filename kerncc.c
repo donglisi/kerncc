@@ -21,7 +21,7 @@ static char *cc;
 static int value_size;
 static int balance;
 
-static void __attribute__ ((constructor)) __init__cc(void)
+static void __attribute__ ((constructor)) __parse_env(void)
 {
 	if (getenv("KERNCC_CC"))
 		cc = getenv("KERNCC_CC");
