@@ -28,10 +28,8 @@ static int native_cc(int connfd, char **args)
 	WIFEXITED(wstatus);
 	es = WEXITSTATUS(wstatus);
 	n = write(connfd, &es, sizeof(int));
-	if (n < 0) {
-		printf("write es %d to connfd error\n", es);
+	if (n < 0)
 		return -1;
-	}
 
 	/* if compile faile */
 	if (es) {
@@ -71,17 +69,13 @@ static void *cc_thread(void *arg)
 	char *cmd, **args, *kbdir, *odir, *opath, *dpath;
 
 	kbdir = read_to_str(connfd);
-	if (IS_ERR(kbdir)) {
-		printf("read_to_str error kbdir\n");
+	if (IS_ERR(kbdir))
 		return 0;
-	}
 	chdir(kbdir);
 
 	cmd = read_to_str(connfd);
-	if (IS_ERR(cmd)) {
-		printf("read_to_str error cmd\n");
+	if (IS_ERR(cmd))
 		return 0;
-	}
 	args = get_args(cmd);
 
 	get_opath(args, &opath);
