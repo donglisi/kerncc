@@ -1,15 +1,13 @@
-CC	:= gcc
-
-OBJS	:= kerncc.o kernccd.o utils.o
-
-CFLAGS	:= -Iinclude -g
-
 %.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+	gcc -c -Iinclude -g $< -o $@
 
-all: $(OBJS)
-	gcc kerncc.o utils.o -o kerncc
-	gcc kernccd.o utils.o -o kernccd
+all: kerncc kernccd
+
+kerncc: kerncc.o utils.o
+	gcc $^ -o $@
+
+kernccd: kernccd.o utils.o
+	gcc $^ -o $@
 
 clean:
 	rm -f *.o kerncc kernccd
