@@ -147,7 +147,7 @@ int end_with(const char *str, const char *suffix)
 
 char *read_to_str(int fd)
 {
-	int n = 0, len, loc = 0;
+	int n, len, loc = 0;
 	char *str, buf[BUFSIZ];
 
 	n = read(fd, &len, sizeof(int));
@@ -233,8 +233,10 @@ void basename1(char *path, char **name)
 void mkdir_recursion(char *dir)
 {
 	char *cmd, mk[] = "mkdir -p ";
-	int mk_len = strlen(mk), cmd_len = mk_len + strlen(dir) + 1;
+	int mk_len, cmd_len;
 
+	mk_len = strlen(mk);
+	cmd_len = mk_len + strlen(dir) + 1;
 	cmd = malloc(cmd_len);
 	strcpy(cmd, mk);
 	strcpy(&cmd[mk_len], dir);
