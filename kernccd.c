@@ -44,22 +44,25 @@ static int native_cc(int connfd, char **args)
 
 static int write_file_to_client(int connfd, char *path)
 {
-	int fd, size, ret = 0;
+	int fd, size, rn, wn, ret = 0;
+	char buf[BUFSIZ];
 
 	size = get_file_size(path);
-	if (write(connfd, &size, sizeof(int)) != sizeof(int)) {
-		printf("write %s size to connfd error\n", path);
+	if (write(connfd, &size, sizeof(int)) != sizeof(int))
 		return -1;
-	}
 
 	fd = open(path, O_RDONLY);
-	if (write_to_fd(fd, connfd)) {
-		printf("write %s file to connfd error\n", path);
-		ret = -2;
+	while ((rn = read(fd, buf, BUFSIZ)) > 0) {
+		size = rn;
+		while ((wn = write(connfd, &buf[rn - size], size)) > 0) {
+			if (wn < 0)
+				return -1;
+			size -= wn;
+		}
 	}
 	close(fd);
 
-	return ret;
+	return 0;
 }
 
 static void *cc_thread(void *arg)
