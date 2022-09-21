@@ -22,3 +22,5 @@
 
 2, 支持交叉编译其他体系结构的内核，比如要为aarch64架构编译内核，只需要在make前加上KERNCC_CC=/usr/bin/aarch64-linux-gnu-gcc就可以，完整的命令行类似这样：<br/>
 KERNCC_CC=/usr/bin/aarch64-linux-gnu-gcc make -j56 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=kerncc O=build
+
+3, 相较于distcc有非常好的资源利用率，distcc本质上是把预处理后的文件分发到远程去编译再回传编译结果，因为预处理之后的文件的体积比较大，所耗费的网络和存储资源较高，性能较差，我这个程序在设置合理的KERNCC_SIZE和KERNCC_BALANCE以及make -j并行任务数的情况下，几乎可以榨干两台机的cpu。
