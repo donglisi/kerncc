@@ -1,5 +1,5 @@
 # kerncc
-研究Linux内核的Kbuild系统让我发现一件有趣的事，Linux内核的Makefile有一个名为parpare0的规则，这个规则执行后就生成了编译绝大多数c语言源代码文件的所需的头文件，同时Linux内核的Makefile生成的编译器命令行非常容易用程序去解析，于是我开发了这个项目来缩短我编译内核的时间。<br/><br/>
+研究Linux内核的Kbuild系统让我发现一件有趣的事，Linux内核的Makefile有一个名为parpare0的规则，这个规则执行后就生成了编译绝大多数c语言源代码文件的所需的头文件，Linux内核的Makefile生成的编译器命令行非常容易用程序去解析，于是我开发了这个项目来缩短我编译内核的时间。<br/><br/>
 
 这个程序支持用2台机一起编译Linux内核，kerncc是编译器的包装器，kernccd是接收编译任务的守护进程。<br/><br/>
 
