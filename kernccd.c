@@ -15,12 +15,13 @@
 
 static int native_cc(int connfd, char **args)
 {
-	int fd, wstatus, es, n;
+	int wstatus, es, n;
 	pid_t pid;
 
 	pid = fork();
 
 	if (!pid) {
+		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
 		execvp(args[0], args);
 	}
 
