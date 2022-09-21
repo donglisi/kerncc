@@ -34,7 +34,7 @@ static int native_cc(int connfd, char **args)
 
 	/* if compile faile */
 	if (es) {
-		print_args(args);
+		print_cpath(args);
 		return -1;
 	}
 

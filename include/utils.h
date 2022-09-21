@@ -5,6 +5,7 @@ char **get_args(char *cmd);
 char **argc_argv_to_args(int argc, char **argv);
 void print_argv(int argc, char **argv);
 void print_args(char **args);
+void print_cpath(char **args);
 
 int get_file_size(char *path);
 void get_opath(char **args, char **opath);

@@ -81,6 +81,15 @@ void print_args(char **args)
 	printf("\n");
 }
 
+void print_cpath(char **args)
+{
+	int i;
+
+	for (i = 0; args[i]; i++)
+		;
+	printf("%s\n", args[i - 1]);
+}
+
 void get_opath(char **args, char **opath)
 {
 	int i;
