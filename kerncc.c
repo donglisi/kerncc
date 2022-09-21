@@ -15,11 +15,11 @@
 
 #include <utils.h>
 
-static char server_ip[] = "192.168.1.2";
 static char gcc[] = "gcc";
 static char *cc;
-static int value_size;
-static int balance;
+static char server_ip[] = "192.168.1.2";
+static int value_size = 1000;
+static int balance = 50;
 
 static void __attribute__ ((constructor)) __parse_env(void)
 {
@@ -33,13 +33,9 @@ static void __attribute__ ((constructor)) __parse_env(void)
 
 	if (getenv("KERNCC_SIZE"))
 		value_size = atoi(getenv("KERNCC_SIZE"));
-	else
-		value_size = 1000;
 
 	if (getenv("KERNCC_BALANCE"))
 		balance = atoi(getenv("KERNCC_BALANCE"));
-	else
-		balance = 50;
 }
 
 static char *get_cmd(int argc, char **argv)
