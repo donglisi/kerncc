@@ -5,7 +5,7 @@
 原理：<br/>
 1, 一台机用来执行make正常构建内核，另一台机仅仅负责生成可重定向目标文件，源代码和.config需要在两台机的相同目录各拷贝一份，通过网络传输编译器命令行以及回传编译结果。<br/><br/>
 
-2, 正常编译的那台机通过传递内核Makefile的参数CC来指定编译器为kerncc，kerncc默认会将PATH中的名为gcc的文件作为编译器，设置环境变量KERNCC_CC可以指定kerncc所使用的编译器。<br/>
+2, 正常编译的那台机通过指定内核Makefile的参数CC来指定编译器为kerncc，kerncc默认会将PATH中的名为gcc的文件作为编译器，设置环境变量KERNCC_CC可以指定kerncc所使用的编译器。<br/>
 
 3, 内核的Makefile有一个名为parpare0的规则，这个规则生成一些必要的头文件，在另一台机上执行make parpare0后就可以开始接收编译任务，当.config修改后需要重新执行这一步。<br/>
 
