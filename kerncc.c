@@ -190,18 +190,14 @@ static bool check_is_cc(int argc, char **argv)
 	if (!end_with(cpath, ".c"))
 		return false;
 
-	if (cpath[0] != '/')
-		return false;
-
 	fp = fopen("./files", "r");
 	if (fp == NULL)
 		return true;
 	while (getline(&line, &len, fp) != -1) {
 		len = strlen(line);
 		line[len - 1] = 0;
-		if (strstr(cpath, line)) {
+		if (!strcmp(cpath, line))
 			return false;
-		}
 	}
 	fclose(fp);
 
