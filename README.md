@@ -24,6 +24,7 @@ KERNCC_CC=/usr/bin/aarch64-linux-gnu-gcc make -j56 ARCH=arm64 CROSS_COMPILE=aarc
 
 3, 相较于distcc有非常好的资源利用率，distcc是把预处理后的文件分发到远程去编译再回传编译结果，因为预处理后的文件的体积比较大，所耗费的网络和存储资源较高，性能较差，kerncc在设置合理的KERNCC_SIZE和KERNCC_BALANCE以及make -j并行任务数的情况下，几乎可以榨干两台机的cpu。<br/><br/>
 
+特性：<br/>
 https://www.youtube.com/watch?v=cUZPV_Kygwc<br/>
 
 这个视频演示了用2台机一起编译可以用来启动我的台式机的内核的效果，develop这台机用来执行make，处理器为3700X，desktop这台机运行kernccd，处理器为5600X，这2台机一起编译耗时2分钟（如果只用3700X这台机编译的话耗时是3分钟）。<br/>
