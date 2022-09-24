@@ -41,66 +41,44 @@ static int native_cc(int connfd, char **args)
 	return 0;
 }
 
-static int write_file_to_client(int connfd, char *path)
-{
-	int fd, size, rn, wn;
-	char buf[BUFSIZ];
-
-	size = get_file_size(path);
-	if (write(connfd, &size, sizeof(int)) != sizeof(int))
-		return -1;
-
-	fd = open(path, O_RDONLY);
-	while ((rn = read(fd, buf, BUFSIZ)) > 0) {
-		size = rn;
-		while ((wn = write(connfd, &buf[rn - size], size)) > 0) {
-			if (wn < 0)
-				return -1;
-			size -= wn;
-		}
-	}
-	close(fd);
-
-	return 0;
-}
-
 static void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, fd;
-	char *cmd, **args, *kbdir, *odir, *opath, *dpath;
+	int connfd = *((int *)arg), i, fd, argc;
+	char *cmd, *full_cmd, **args, *opath, *ipath;
 
-	kbdir = read_to_str(connfd);
-	if (IS_ERR(kbdir))
-		return 0;
-	chdir(kbdir);
+	opath = "/dev/shm/a.o";
+	ipath = "/dev/shm/a.i";
 
 	cmd = read_to_str(connfd);
 	if (IS_ERR(cmd))
 		return 0;
-	args = get_args(cmd);
+	full_cmd = malloc(strlen(cmd) + 1 + strlen(opath) + 1 + strlen(ipath) + 1);
+	strcpy(full_cmd, cmd);
+	strcat(full_cmd, " ");
+	strcat(full_cmd, opath);
+	strcat(full_cmd, " ");
+	strcat(full_cmd, ipath);
+	args = get_args(full_cmd);
+	argc = get_argc(args);
 
-	get_opath(args, &opath);
-	dirname1(opath, &odir);
-	mkdir_recursion(odir);
+	read_file_from_server(connfd, ipath);
+
+/*
+	opath = args[argc - 2];
+*/
 
 	if (native_cc(connfd, args))
 		goto error;
 
-	if (write_file_to_client(connfd, opath))
-		goto error;
-
-	get_dpath(args, &dpath);
-	write_file_to_client(connfd, dpath);
-	free(dpath);
+	write_file_to_client(connfd, opath);
 
 error:
 	for (i = 0; args[i]; i++)
 		free(args[i]);
 	free(args);
 	free(arg);
-	free(odir);
 	free(cmd);
-	free(kbdir);
+	free(full_cmd);
 	close(connfd);
 
 	return 0;

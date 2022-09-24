@@ -253,3 +253,58 @@ void mkdir_recursion(char *dir)
 	system(cmd);
 	free(cmd);
 }
+
+int read_file_from_server(int sockfd, char *path)
+{
+	int fd, n, size;
+	char buf[BUFSIZ];
+
+	n = read(sockfd, &size, sizeof(int));
+	if (n < 0)
+		return -1;
+
+	fd = open(path, O_CREAT | O_WRONLY, 0644);
+	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+		if (n < 0)
+			return -1;
+		size -= n;
+		if (write(fd, buf, n) != n)
+			return -1;
+	}
+	close(fd);
+
+	return 0;
+}
+
+int get_argc(char **args)
+{
+	int i;
+
+	for (i = 0; args[i]; i++)
+		;
+
+	return i;
+}
+
+int write_file_to_client(int connfd, char *path)
+{
+	int fd, size, rn, wn;
+	char buf[BUFSIZ];
+
+	size = get_file_size(path);
+	if (write(connfd, &size, sizeof(int)) != sizeof(int))
+		return -1;
+
+	fd = open(path, O_RDONLY);
+	while ((rn = read(fd, buf, BUFSIZ)) > 0) {
+		size = rn;
+		while ((wn = write(connfd, &buf[rn - size], size)) > 0) {
+			if (wn < 0)
+				return -1;
+			size -= wn;
+		}
+	}
+	close(fd);
+
+	return 0;
+}

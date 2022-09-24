@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -67,6 +68,7 @@ static int native_cc(int argc, char **argv);
 static bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
+		return true;
 		if (get_file_size(argv[argc - 1]) > value_size) {
 			srand(time(NULL) + getpid());
 			if (rand() % 100 > balance)
@@ -100,24 +102,45 @@ static int get_sockfd(void)
 	return sockfd;
 }
 
-static int read_file_from_server(int sockfd, char *path)
+static int native_cc1(char **args)
 {
-	int fd, n, size;
-	char buf[BUFSIZ];
+	int wstatus, es;
+	pid_t pid;
 
-	n = read(sockfd, &size, sizeof(int));
-	if (n < 0)
-		return -1;
-
-	fd = open(path, O_CREAT | O_WRONLY, 0644);
-	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
-		if (n < 0)
-			return -1;
-		size -= n;
-		if (write(fd, buf, n) != n)
-			return -1;
+	pid = fork();
+	if (!pid) {
+		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
+		args[0] = "cpp";
+		execvp(args[0], args);
 	}
-	close(fd);
+
+	waitpid(pid, &wstatus, 0);
+	WIFEXITED(wstatus);
+	es = WEXITSTATUS(wstatus);
+
+	/* if compile faile */
+	if (es) {
+		print_cpath(args);
+		return -1;
+	}
+
+	return 0;
+}
+
+int preprocess(int sockfd, int argc, char **argv)
+{
+	int i, len;
+
+	argv[argc - 4][1] = 'E';
+	len = strlen(argv[argc - 2]);
+	argv[argc - 2][len - 1] = 'i';
+
+	native_cc1(argv);
+	if (write_file_to_client(sockfd, argv[argc - 2]))
+		return 1;
+
+	argv[argc - 4][1] = 'c';
+	argv[argc - 2][len - 1] = 'o';
 
 	return 0;
 }
@@ -125,33 +148,27 @@ static int read_file_from_server(int sockfd, char *path)
 static int remote_cc(int argc, char **argv)
 {
 	int sockfd, n, es = 1;
-	char *opath, *dpath, *cmd, **args;
+	char *opath, *cmd;
 
+	opath = argv[argc - 2];
 	sockfd = get_sockfd();
 	if (sockfd == -1)
 		return native_cc(argc, argv);
 
-	if (write_from_str(sockfd, getenv("PWD")))
-		return native_cc(argc, argv);
-
-	cmd = get_cmd(argc, argv);
-	args = argc_argv_to_args(argc, argv);
+	cmd = get_cmd(argc - 2, argv);
 
 	if (write_from_str(sockfd, cmd))
+		return native_cc(argc, argv);
+
+	if (preprocess(sockfd, argc, argv))
 		return native_cc(argc, argv);
 
 	n = read(sockfd, &es, sizeof(int));
 	if (n < 0 || es)
 		return native_cc(argc, argv);
 
-	get_opath(args, &opath);
 	if (read_file_from_server(sockfd, opath))
 		return native_cc(argc, argv);
-
-	get_dpath(args, &dpath);
-	if (read_file_from_server(sockfd, dpath))
-		return native_cc(argc, argv);
-	free(dpath);
 
 	free(cmd);
 	close(sockfd);

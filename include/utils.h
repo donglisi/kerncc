@@ -14,4 +14,7 @@ void dirname1(char *path, char **dir);
 void basename1(char *path, char **name);
 void mkdir_recursion(char *path);
 
+int get_argc(char **args);
 int end_with(const char *str, const char *suffix);
+int read_file_from_server(int sockfd, char *path);
+int write_file_to_client(int connfd, char *path);
