@@ -7,11 +7,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <zlib.h>
 #include <string.h>
 #include <pthread.h>
 
 #include <linux/err.h>
 #include <utils.h>
+#include "zpipe.h"
 
 static int native_cc(int connfd, char **args)
 {
@@ -78,8 +80,9 @@ char *get_cmd(int connfd)
 
 static void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, argc;
-	char *cmd, **args, *opath, *ipath;
+	int connfd = *((int *)arg), i, argc, len, ret;
+	char *cmd, **args, *opath, *ipath, *izpath;
+	FILE *ifile, *izfile;
 
 	cmd = get_cmd(connfd);
 	if (IS_ERR(cmd))
@@ -90,8 +93,21 @@ static void *cc_thread(void *arg)
 	ipath = args[argc - 1];
 	opath = args[argc - 2];
 
-	if (read_file_from_sockfd(connfd, ipath))
+	len = strlen(ipath);
+	izpath = malloc(len + 3);
+	strcpy(izpath, ipath);
+	strcat(izpath, ".z");
+
+	if (read_file_from_sockfd(connfd, izpath))
 		goto error;
+
+	ifile = fopen(ipath, "w");
+	izfile = fopen(izpath, "r");
+	ret = inf(izfile, ifile);
+	if (ret != Z_OK)
+		zerr(ret);
+	fclose(ifile);
+	fclose(izfile);
 
 	if (native_cc(connfd, args))
 		goto error;
@@ -99,8 +115,10 @@ static void *cc_thread(void *arg)
 	write_file_to_sockfd(connfd, opath);
 
 error:
-	remove(ipath);
-	remove(opath);
+	free(izpath);
+	// remove(ipath);
+	// remove(izpath);
+	// remove(opath);
 	for (i = 0; args[i]; i++)
 		free(args[i]);
 	free(args);

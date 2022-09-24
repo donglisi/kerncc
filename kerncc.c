@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <zlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -15,6 +16,7 @@
 #include <netinet/in.h>
 
 #include <utils.h>
+#include "zpipe.h"
 
 static char gcc[] = "gcc";
 static char *cc;
@@ -68,6 +70,7 @@ static int native_cc(int argc, char **argv);
 static bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
+		return true;
 		if (get_file_size(argv[argc - 1]) > value_size) {
 			srand(time(NULL) + getpid());
 			if (rand() % 100 > balance)
@@ -128,20 +131,40 @@ static int native_cc1(char **args)
 
 int preprocess(int sockfd, int argc, char **argv)
 {
-	int i, len;
+	int i, len, ret;
+	char *ipath, *izpath;
+	FILE *ifile, *izfile;
+
+	ipath = argv[argc - 2];
+	len = strlen(ipath);
+	ipath[len - 1] = 'i';
 
 	argv[argc - 4][1] = 'E';
-	len = strlen(argv[argc - 2]);
-	argv[argc - 2][len - 1] = 'i';
-
 	native_cc1(argv);
-	if (write_file_to_sockfd(sockfd, argv[argc - 2]))
-		return 1;
-
 	argv[argc - 4][1] = 'c';
-	argv[argc - 2][len - 1] = 'o';
 
-	return 0;
+	izpath = malloc(len + 3);
+	strcpy(izpath, ipath);
+	strcat(izpath, ".z");
+
+	printf("%s\n", izpath);
+	ifile = fopen(ipath, "r");
+	izfile = fopen(izpath, "w");
+	ret = def(ifile, izfile, Z_DEFAULT_COMPRESSION);
+	if (ret != Z_OK)
+		zerr(ret);
+
+	fclose(ifile);
+	fclose(izfile);
+
+	ret = 0;
+	if (write_file_to_sockfd(sockfd, izpath))
+		ret = 1;
+
+	ipath[len - 1] = 'o';
+
+	free(izpath);
+	return ret;
 }
 
 static int remote_cc(int argc, char **argv)
