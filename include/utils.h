@@ -16,5 +16,5 @@ void mkdir_recursion(char *path);
 
 int get_argc(char **args);
 int end_with(const char *str, const char *suffix);
-int read_file_from_server(int sockfd, char *path);
-int write_file_to_client(int connfd, char *path);
+int read_file_from_sockfd(int sockfd, char *path);
+int write_file_to_sockfd(int connfd, char *path);

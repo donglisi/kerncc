@@ -73,7 +73,7 @@ static void *cc_thread(void *arg)
 	argc = get_argc(args);
 
 	// print_args(args);
-	read_file_from_server(connfd, ipath);
+	read_file_from_sockfd(connfd, ipath);
 
 /*
 	opath = args[argc - 2];
@@ -82,7 +82,7 @@ static void *cc_thread(void *arg)
 	if (native_cc(connfd, args))
 		goto error;
 
-	write_file_to_client(connfd, opath);
+	write_file_to_sockfd(connfd, opath);
 
 error:
 	for (i = 0; args[i]; i++)
