@@ -44,10 +44,21 @@ static int native_cc(int connfd, char **args)
 static void *cc_thread(void *arg)
 {
 	int connfd = *((int *)arg), i, fd, argc;
-	char *cmd, *full_cmd, **args, *opath, *ipath;
+	char tmp[] = "/dev/shm/tmp", uuid[37], *cmd, *full_cmd, **args, *opath, *ipath;
 
-	opath = "/dev/shm/a.o";
-	ipath = "/dev/shm/a.i";
+	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
+	read(fd, uuid, 36);
+	close(fd);
+	uuid[36] = 0;
+
+	opath = malloc(strlen(tmp) + strlen(uuid) + 3);
+	strcpy(opath, tmp);
+	strcat(opath, uuid);
+	strcat(opath, ".o");
+	ipath = malloc(strlen(tmp) + strlen(uuid) + 3);
+	strcpy(ipath, tmp);
+	strcat(ipath, uuid);
+	strcat(ipath, ".i");
 
 	cmd = read_to_str(connfd);
 	if (IS_ERR(cmd))
@@ -61,6 +72,7 @@ static void *cc_thread(void *arg)
 	args = get_args(full_cmd);
 	argc = get_argc(args);
 
+	// print_args(args);
 	read_file_from_server(connfd, ipath);
 
 /*
@@ -77,6 +89,8 @@ error:
 		free(args[i]);
 	free(args);
 	free(arg);
+	free(ipath);
+	free(opath);
 	free(cmd);
 	free(full_cmd);
 	close(connfd);
