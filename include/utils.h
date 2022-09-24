@@ -8,10 +8,10 @@ void print_args(char **args);
 void print_cpath(char **args);
 
 int get_file_size(char *path);
-void get_opath(char **args, char **opath);
 void get_dpath(char **args, char **dpath);
 void dirname1(char *path, char **dir);
 void basename1(char *path, char **name);
 void mkdir_recursion(char *path);
 
+int get_argc(char **args);
 int end_with(const char *str, const char *suffix);

@@ -66,7 +66,7 @@ static int write_file_to_client(int connfd, char *path)
 
 static void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, fd;
+	int connfd = *((int *)arg), i, fd, argc;
 	char *cmd, **args, *kbdir, *odir, *opath, *dpath;
 
 	kbdir = read_to_str(connfd);
@@ -78,8 +78,9 @@ static void *cc_thread(void *arg)
 	if (IS_ERR(cmd))
 		return 0;
 	args = get_args(cmd);
+	argc = get_argc(args);
+	opath = args[argc - 2];
 
-	get_opath(args, &opath);
 	dirname1(opath, &odir);
 	mkdir_recursion(odir);
 

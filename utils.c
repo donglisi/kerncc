@@ -90,24 +90,23 @@ void print_cpath(char **args)
 	printf("%s\n", args[i - 1]);
 }
 
-void get_opath(char **args, char **opath)
+int get_argc(char **args)
 {
 	int i;
 
-	for (i = 0; args[i]; i++) {
-		if (!strcmp("-o", args[i])) {
-			*opath = args[i + 1];
-			return;
-		}
-	}
+	for (i = 0; args[i]; i++)
+		;
+
+	return i;
 }
 
 void get_dpath(char **args, char **dpath)
 {
-	int loc;
+	int loc, argc;
 	char *opath, *dirpath, *name;
 
-	get_opath(args, &opath);
+	argc = get_argc(args);
+	opath = args[argc - 2];
 	dirname1(opath, &dirpath);
 	basename1(opath, &name);
 
