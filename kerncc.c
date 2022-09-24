@@ -70,7 +70,6 @@ static int native_cc(int argc, char **argv);
 static bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
-		return true;
 		if (get_file_size(argv[argc - 1]) > value_size) {
 			srand(time(NULL) + getpid());
 			if (rand() % 100 > balance)
@@ -147,7 +146,6 @@ int preprocess(int sockfd, int argc, char **argv)
 	strcpy(izpath, ipath);
 	strcat(izpath, ".z");
 
-	printf("%s\n", izpath);
 	ifile = fopen(ipath, "r");
 	izfile = fopen(izpath, "w");
 	ret = def(ifile, izfile, Z_DEFAULT_COMPRESSION);
@@ -161,6 +159,8 @@ int preprocess(int sockfd, int argc, char **argv)
 	if (write_file_to_sockfd(sockfd, izpath))
 		ret = 1;
 
+	remove(izpath);
+	remove(ipath);
 	ipath[len - 1] = 'o';
 
 	free(izpath);

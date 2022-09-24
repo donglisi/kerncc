@@ -36,7 +36,7 @@ static int native_cc(int connfd, char **args)
 
 	/* if compile faile */
 	if (es) {
-		print_cpath(args);
+		print_args(args);
 		return -1;
 	}
 
@@ -115,10 +115,10 @@ static void *cc_thread(void *arg)
 	write_file_to_sockfd(connfd, opath);
 
 error:
+	remove(ipath);
+	remove(izpath);
+	remove(opath);
 	free(izpath);
-	// remove(ipath);
-	// remove(izpath);
-	// remove(opath);
 	for (i = 0; args[i]; i++)
 		free(args[i]);
 	free(args);
