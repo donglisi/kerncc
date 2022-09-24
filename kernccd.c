@@ -41,43 +41,57 @@ static int native_cc(int connfd, char **args)
 	return 0;
 }
 
-static void *cc_thread(void *arg)
+char *get_cmd(int connfd)
 {
-	int connfd = *((int *)arg), i, fd, argc;
-	char tmp[] = "/dev/shm/tmp", uuid[37], *cmd, *full_cmd, **args, *opath, *ipath;
+	int fd, tmp_len = 13, uuid_len = 37, path_len = tmp_len -1 + uuid_len -1 + 3;
+	char tmp[tmp_len], uuid[uuid_len], *cmd, *full_cmd, opath[path_len], ipath[path_len];
 
+	cmd = read_to_str(connfd);
+	if (IS_ERR(cmd))
+		return ERR_PTR(-EIO);
+
+	strcpy(tmp, "/dev/shm/tmp");
 	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
-	read(fd, uuid, 36);
+	read(fd, uuid, uuid_len - 1);
 	close(fd);
-	uuid[36] = 0;
+	uuid[uuid_len - 1] = 0;
 
-	opath = malloc(strlen(tmp) + strlen(uuid) + 3);
 	strcpy(opath, tmp);
 	strcat(opath, uuid);
 	strcat(opath, ".o");
-	ipath = malloc(strlen(tmp) + strlen(uuid) + 3);
+
 	strcpy(ipath, tmp);
 	strcat(ipath, uuid);
 	strcat(ipath, ".i");
 
-	cmd = read_to_str(connfd);
-	if (IS_ERR(cmd))
-		return 0;
 	full_cmd = malloc(strlen(cmd) + 1 + strlen(opath) + 1 + strlen(ipath) + 1);
 	strcpy(full_cmd, cmd);
 	strcat(full_cmd, " ");
 	strcat(full_cmd, opath);
 	strcat(full_cmd, " ");
 	strcat(full_cmd, ipath);
-	args = get_args(full_cmd);
+
+	free(cmd);
+
+	return full_cmd;
+}
+
+static void *cc_thread(void *arg)
+{
+	int connfd = *((int *)arg), i, argc;
+	char *cmd, **args, *opath, *ipath;
+
+	cmd = get_cmd(connfd);
+	if (IS_ERR(cmd))
+		goto cmd_error;
+
+	args = get_args(cmd);
 	argc = get_argc(args);
-
-	// print_args(args);
-	read_file_from_sockfd(connfd, ipath);
-
-/*
+	ipath = args[argc - 1];
 	opath = args[argc - 2];
-*/
+
+	if (read_file_from_sockfd(connfd, ipath))
+		goto error;
 
 	if (native_cc(connfd, args))
 		goto error;
@@ -85,14 +99,14 @@ static void *cc_thread(void *arg)
 	write_file_to_sockfd(connfd, opath);
 
 error:
+	remove(ipath);
+	remove(opath);
 	for (i = 0; args[i]; i++)
 		free(args[i]);
 	free(args);
-	free(arg);
-	free(ipath);
-	free(opath);
 	free(cmd);
-	free(full_cmd);
+cmd_error:
+	free(arg);
 	close(connfd);
 
 	return 0;
