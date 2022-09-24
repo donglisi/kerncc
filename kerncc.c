@@ -68,7 +68,6 @@ static int native_cc(int argc, char **argv);
 static bool need_remote_cc(int argc, char **argv)
 {
 	if (check_is_cc(argc, argv)) {
-		return true;
 		if (get_file_size(argv[argc - 1]) > value_size) {
 			srand(time(NULL) + getpid());
 			if (rand() % 100 > balance)
@@ -205,6 +204,9 @@ static bool check_is_cc(int argc, char **argv)
 	size_t len = 0;
 
 	if (!end_with(cpath, ".c"))
+		return false;
+
+	if (strcmp(argv[argc - 4], "-c"))
 		return false;
 
 	fp = fopen("./files", "r");
