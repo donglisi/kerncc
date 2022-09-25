@@ -190,6 +190,9 @@ static bool check_is_cc(int argc, char **argv)
 	if (!end_with(cpath, ".c"))
 		return false;
 
+	if (strcmp(argv[argc - 4], "-c"))
+		return false;
+
 	fp = fopen("./files", "r");
 	if (fp == NULL)
 		return true;

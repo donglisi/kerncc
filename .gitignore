@@ -4,3 +4,4 @@ kerncc.o
 kernccd
 kernccd.o
 utils.o
+zpipe.o
