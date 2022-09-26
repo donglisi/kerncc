@@ -102,7 +102,7 @@ int get_argc(char **args)
 
 void get_dpath(char **args, char **dpath)
 {
-	int loc, argc;
+	int argc;
 	char *opath, *dirpath, *name;
 
 	argc = get_argc(args);
@@ -112,14 +112,9 @@ void get_dpath(char **args, char **dpath)
 
 	*dpath = malloc(strlen(opath) + 4);
 	strcpy(*dpath, dirpath);
-	loc = strlen(dirpath);
-	strcpy(&((*dpath)[loc]), "/.");
-	loc += 2;
-	strcpy(&((*dpath)[loc]), name);
-	loc += strlen(name);
-	strcpy(&((*dpath)[loc]), ".d");
-	loc += 2;
-	(*dpath)[loc] = 0;
+	strcat(*dpath, "/.");
+	strcat(*dpath, name);
+	strcat(*dpath, ".d");
 
 	free(dirpath);
 	free(name);
