@@ -103,15 +103,21 @@ static int get_sockfd(void)
 	return sockfd;
 }
 
-static int native_cc1(char **args)
+static int native_cpp(int argc, char **argv, char *ipath)
 {
-	int wstatus, es;
+	int wstatus, es, len;
 	pid_t pid;
+	char **args;
 
 	pid = fork();
 	if (!pid) {
 		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
+
+		args = argc_argv_to_args(argc, argv);
 		args[0] = "cpp";
+		args[argc - 4][1] = 'E';
+		args[argc - 2] = ipath;
+
 		execvp(args[0], args);
 	}
 
@@ -128,23 +134,28 @@ static int native_cc1(char **args)
 	return 0;
 }
 
-int preprocess(int sockfd, int argc, char **argv)
+char *get_tmp_path(void)
 {
-	int i, len, ret;
-	char *ipath, *izpath;
+	int fd, uuid_len = 37;
+	char tmp[] = "/dev/shm/kerncc-", *uuid, *tmp_path;
+
+	uuid = malloc(uuid_len);
+	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
+	read(fd, uuid, uuid_len - 1);
+	close(fd);
+	uuid[uuid_len - 1] = 0;
+
+	tmp_path = malloc(strlen(tmp) + strlen(uuid) + 1);
+	strcpy(tmp_path, tmp);
+	strcat(tmp_path, uuid);
+
+	return tmp_path;
+}
+
+int compression(char *ipath, char *izpath)
+{
+	int ret;
 	FILE *ifile, *izfile;
-
-	ipath = argv[argc - 2];
-	len = strlen(ipath);
-	ipath[len - 1] = 'i';
-
-	argv[argc - 4][1] = 'E';
-	native_cc1(argv);
-	argv[argc - 4][1] = 'c';
-
-	izpath = malloc(len + 3);
-	strcpy(izpath, ipath);
-	strcat(izpath, ".z");
 
 	ifile = fopen(ipath, "r");
 	izfile = fopen(izpath, "w");
@@ -155,45 +166,68 @@ int preprocess(int sockfd, int argc, char **argv)
 	fclose(ifile);
 	fclose(izfile);
 
-	ret = 0;
-	if (write_file_to_sockfd(sockfd, izpath))
-		ret = 1;
-
-	remove(izpath);
-	remove(ipath);
-	ipath[len - 1] = 'o';
-
-	free(izpath);
 	return ret;
+}
+
+char *get_ipath(void)
+{
+	char *tmp_path, *ipath;
+
+	tmp_path = get_tmp_path();
+	ipath = malloc(strlen(tmp_path + 3));
+	strcpy(ipath, tmp_path);
+	strcat(ipath, ".i");
+	free(tmp_path);
+
+	return ipath;
+}
+
+char *get_izpath(char *ipath)
+{
+	char *izpath;
+
+	izpath = malloc(strlen(ipath) + 3);
+	strcpy(izpath, ipath);
+	strcat(izpath, ".z");
+
+	return izpath;
 }
 
 static int remote_cc(int argc, char **argv)
 {
 	int sockfd, n, es = 1;
-	char *opath, *cmd;
+	char *cmd, *ipath, *izpath;
 
-	opath = argv[argc - 2];
 	sockfd = get_sockfd();
 	if (sockfd == -1)
 		return native_cc(argc, argv);
 
 	cmd = get_cmd(argc - 2, argv);
-
 	if (write_from_str(sockfd, cmd))
 		return native_cc(argc, argv);
 
-	if (preprocess(sockfd, argc, argv))
+	ipath = get_ipath();
+	if (native_cpp(argc, argv, ipath))
+		return native_cc(argc, argv);
+
+	izpath = get_izpath(ipath);
+	if (compression(ipath, izpath))
+		return native_cc(argc, argv);
+
+	if (write_file_to_sockfd(sockfd, izpath))
 		return native_cc(argc, argv);
 
 	n = read(sockfd, &es, sizeof(int));
 	if (n < 0 || es)
 		return native_cc(argc, argv);
 
-	if (read_file_from_sockfd(sockfd, opath))
+	if (read_file_from_sockfd(sockfd, argv[argc - 2]))
 		return native_cc(argc, argv);
 
 	free(cmd);
 	close(sockfd);
+	remove(ipath);
+	remove(izpath);
 
 	return 0;
 }
