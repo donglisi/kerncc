@@ -18,3 +18,8 @@ int get_argc(char **args);
 int end_with(const char *str, const char *suffix);
 int read_file_from_sockfd(int sockfd, char *path);
 int write_file_to_sockfd(int connfd, char *path);
+
+char *get_ipath(void);
+char *get_izpath(char *ipath);
+int compression(char *path, char *zpath);
+int decompression(char *zpath, char *path);

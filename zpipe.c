@@ -34,7 +34,7 @@
    level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
    version of the library linked do not match, or Z_ERRNO if there is
    an error reading or writing the files. */
-int def(FILE * source, FILE * dest, int level)
+static int def(FILE * source, FILE * dest, int level)
 {
 	int ret, flush;
 	unsigned have;
@@ -91,7 +91,7 @@ int def(FILE * source, FILE * dest, int level)
    invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
    the version of the library linked do not match, or Z_ERRNO if there
    is an error reading or writing the files. */
-int inf(FILE * source, FILE * dest)
+static int inf(FILE * source, FILE * dest)
 {
 	int ret;
 	unsigned have;
@@ -151,7 +151,7 @@ int inf(FILE * source, FILE * dest)
 }
 
 /* report a zlib or i/o error */
-void zerr(int ret)
+static void zerr(int ret)
 {
 	fputs("zpipe: ", stderr);
 	switch (ret) {
@@ -173,4 +173,38 @@ void zerr(int ret)
 	case Z_VERSION_ERROR:
 		fputs("zlib version mismatch!\n", stderr);
 	}
+}
+
+int compression(char *path, char *zpath)
+{
+	int ret;
+	FILE *file, *zfile;
+
+	file = fopen(path, "r");
+	zfile = fopen(zpath, "w");
+	ret = def(file, zfile, Z_DEFAULT_COMPRESSION);
+	if (ret != Z_OK)
+		zerr(ret);
+
+	fclose(file);
+	fclose(zfile);
+
+	return ret;
+}
+
+int decompression(char *zpath, char *path)
+{
+	int ret;
+	FILE *file, *zfile;
+
+	zfile = fopen(zpath, "r");
+	file = fopen(path, "w");
+	ret = inf(zfile, file);
+	if (ret != Z_OK)
+		zerr(ret);
+
+	fclose(file);
+	fclose(zfile);
+
+	return ret;
 }

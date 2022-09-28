@@ -45,26 +45,17 @@ static int native_cc(int connfd, char **args)
 
 char *get_cmd(int connfd)
 {
-	int fd, tmp_len = 13, uuid_len = 37, path_len = tmp_len -1 + uuid_len -1 + 3;
-	char tmp[tmp_len], uuid[uuid_len], *cmd, *full_cmd, opath[path_len], ipath[path_len];
+	char *cmd, *full_cmd, *opath, *ipath;
 
 	cmd = read_to_str(connfd);
 	if (IS_ERR(cmd))
 		return ERR_PTR(-EIO);
 
-	strcpy(tmp, "/dev/shm/tmp");
-	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
-	read(fd, uuid, uuid_len - 1);
-	close(fd);
-	uuid[uuid_len - 1] = 0;
+	ipath = get_ipath();
 
-	strcpy(opath, tmp);
-	strcat(opath, uuid);
-	strcat(opath, ".o");
-
-	strcpy(ipath, tmp);
-	strcat(ipath, uuid);
-	strcat(ipath, ".i");
+	opath = malloc(strlen(ipath) + 1);
+	strcpy(opath, ipath);
+	opath[strlen(ipath) - 1] = 'o';
 
 	full_cmd = malloc(strlen(cmd) + 1 + strlen(opath) + 1 + strlen(ipath) + 1);
 	strcpy(full_cmd, cmd);
@@ -74,6 +65,8 @@ char *get_cmd(int connfd)
 	strcat(full_cmd, ipath);
 
 	free(cmd);
+	free(ipath);
+	free(opath);
 
 	return full_cmd;
 }
@@ -82,7 +75,6 @@ static void *cc_thread(void *arg)
 {
 	int connfd = *((int *)arg), i, argc, len, ret;
 	char *cmd, **args, *opath, *ipath, *izpath;
-	FILE *ifile, *izfile;
 
 	cmd = get_cmd(connfd);
 	if (IS_ERR(cmd))
@@ -92,22 +84,13 @@ static void *cc_thread(void *arg)
 	argc = get_argc(args);
 	ipath = args[argc - 1];
 	opath = args[argc - 2];
-
-	len = strlen(ipath);
-	izpath = malloc(len + 3);
-	strcpy(izpath, ipath);
-	strcat(izpath, ".z");
+	izpath = get_izpath(ipath);
 
 	if (read_file_from_sockfd(connfd, izpath))
 		goto error;
 
-	ifile = fopen(ipath, "w");
-	izfile = fopen(izpath, "r");
-	ret = inf(izfile, ifile);
-	if (ret != Z_OK)
-		zerr(ret);
-	fclose(ifile);
-	fclose(izfile);
+	if (decompression(izpath, ipath))
+		goto error;
 
 	if (native_cc(connfd, args))
 		goto error;

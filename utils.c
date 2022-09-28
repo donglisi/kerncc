@@ -308,3 +308,34 @@ int write_file_to_sockfd(int sockfd, char *path)
 
 	return 0;
 }
+
+char *get_ipath(void)
+{
+	int fd, uuid_len = 37;
+	char tmp[] = "/dev/shm/kerncc-", *uuid, *ipath;
+
+	uuid = malloc(uuid_len);
+	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
+	read(fd, uuid, uuid_len - 1);
+	close(fd);
+	uuid[uuid_len - 1] = 0;
+
+	ipath = malloc(strlen(tmp) + strlen(uuid) + 3);
+	strcpy(ipath, tmp);
+	strcat(ipath, uuid);
+	strcat(ipath, ".i");
+	free(uuid);
+
+	return ipath;
+}
+
+char *get_izpath(char *ipath)
+{
+	char *izpath;
+
+	izpath = malloc(strlen(ipath) + 3);
+	strcpy(izpath, ipath);
+	strcat(izpath, ".z");
+
+	return izpath;
+}

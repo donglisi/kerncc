@@ -134,65 +134,6 @@ static int native_cpp(int argc, char **argv, char *ipath)
 	return 0;
 }
 
-char *get_tmp_path(void)
-{
-	int fd, uuid_len = 37;
-	char tmp[] = "/dev/shm/kerncc-", *uuid, *tmp_path;
-
-	uuid = malloc(uuid_len);
-	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
-	read(fd, uuid, uuid_len - 1);
-	close(fd);
-	uuid[uuid_len - 1] = 0;
-
-	tmp_path = malloc(strlen(tmp) + strlen(uuid) + 1);
-	strcpy(tmp_path, tmp);
-	strcat(tmp_path, uuid);
-
-	return tmp_path;
-}
-
-int compression(char *ipath, char *izpath)
-{
-	int ret;
-	FILE *ifile, *izfile;
-
-	ifile = fopen(ipath, "r");
-	izfile = fopen(izpath, "w");
-	ret = def(ifile, izfile, Z_DEFAULT_COMPRESSION);
-	if (ret != Z_OK)
-		zerr(ret);
-
-	fclose(ifile);
-	fclose(izfile);
-
-	return ret;
-}
-
-char *get_ipath(void)
-{
-	char *tmp_path, *ipath;
-
-	tmp_path = get_tmp_path();
-	ipath = malloc(strlen(tmp_path + 3));
-	strcpy(ipath, tmp_path);
-	strcat(ipath, ".i");
-	free(tmp_path);
-
-	return ipath;
-}
-
-char *get_izpath(char *ipath)
-{
-	char *izpath;
-
-	izpath = malloc(strlen(ipath) + 3);
-	strcpy(izpath, ipath);
-	strcat(izpath, ".z");
-
-	return izpath;
-}
-
 static int remote_cc(int argc, char **argv)
 {
 	int sockfd, n, es = 1;
