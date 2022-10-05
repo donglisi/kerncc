@@ -99,7 +99,7 @@ static int get_sockfd(void)
 
 static int native_cpp(int argc, char **argv, char *ipath)
 {
-	int wstatus, es, len;
+	int wstatus, es;
 	pid_t pid;
 	char **args;
 
@@ -137,7 +137,7 @@ static int remote_cc(int argc, char **argv)
 	if (sockfd == -1)
 		return native_cc(argc, argv);
 
-	cmd = get_cmd(argc - 2, argv);
+	cmd = get_cmd(argc, argv);
 	if (write_from_str(sockfd, cmd))
 		return native_cc(argc, argv);
 

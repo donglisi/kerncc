@@ -50,6 +50,14 @@ char **get_args(char *cmd)
 	return args;
 }
 
+void free_args(char **args)
+{
+	int i;
+
+	for (i = 0; args[i]; i++)
+		free(args[i]);
+}
+
 char **argc_argv_to_args(int argc, char **argv)
 {
 	int i;
@@ -61,6 +69,16 @@ char **argc_argv_to_args(int argc, char **argv)
 	args[argc] = NULL;
 
 	return args;
+}
+
+int get_argc(char **args)
+{
+	int i;
+
+	for (i = 0; args[i]; i++)
+		;
+
+	return i;
 }
 
 void print_argv(int argc, char **argv)
@@ -83,47 +101,10 @@ void print_args(char **args)
 
 void print_cpath(char **args)
 {
-	int i;
+	int argc;
 
-	for (i = 0; args[i]; i++)
-		;
-	printf("%s\n", args[i - 1]);
-}
-
-void get_opath(char **args, char **opath)
-{
-	int i;
-
-	for (i = 0; args[i]; i++) {
-		if (!strcmp("-o", args[i])) {
-			*opath = args[i + 1];
-			return;
-		}
-	}
-}
-
-void get_dpath(char **args, char **dpath)
-{
-	int loc;
-	char *opath, *dirpath, *name;
-
-	get_opath(args, &opath);
-	dirname1(opath, &dirpath);
-	basename1(opath, &name);
-
-	*dpath = malloc(strlen(opath) + 4);
-	strcpy(*dpath, dirpath);
-	loc = strlen(dirpath);
-	strcpy(&((*dpath)[loc]), "/.");
-	loc += 2;
-	strcpy(&((*dpath)[loc]), name);
-	loc += strlen(name);
-	strcpy(&((*dpath)[loc]), ".d");
-	loc += 2;
-	(*dpath)[loc] = 0;
-
-	free(dirpath);
-	free(name);
+	argc = get_argc(args);
+	printf("%s\n", args[argc - 1]);
 }
 
 int get_file_size(char *path)
@@ -195,75 +176,6 @@ int write_from_str(int fd, char *str)
 	return 0;
 }
 
-int read_to_fd(int infd, int outfd)
-{
-	int n, size;
-	char buf[BUFSIZ];
-
-	n = read(infd, &size, sizeof(int));
-	if (n < 0)
-		return -1;
-
-	while ((n = read(infd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
-		if (n < 0)
-			return -1;
-		size -= n;
-		if (write(outfd, buf, n) != n)
-			printf("write error %d\n", n);
-	}
-
-	return 0;
-}
-
-void dirname1(char *path, char **dir)
-{
-	char *copy, *tmp;
-
-	copy = malloc(strlen(path) + 1);
-	strcpy(copy, path);
-	tmp = dirname(copy);
-	*dir = malloc(strlen(tmp) + 1);
-	strcpy(*dir, tmp);
-	free(copy);
-}
-
-void basename1(char *path, char **name)
-{
-	char *copy, *tmp;
-
-	copy = malloc(strlen(path) + 1);
-	strcpy(copy, path);
-	tmp = basename(copy);
-	*name = malloc(strlen(tmp) + 1);
-	strcpy(*name, tmp);
-	free(copy);
-}
-
-void mkdir_recursion(char *dir)
-{
-	char *cmd, mk[] = "mkdir -p ";
-	int mk_len, cmd_len;
-
-	mk_len = strlen(mk);
-	cmd_len = mk_len + strlen(dir) + 1;
-	cmd = malloc(cmd_len);
-	strcpy(cmd, mk);
-	strcpy(&cmd[mk_len], dir);
-	cmd[cmd_len -1 ] = 0;
-	system(cmd);
-	free(cmd);
-}
-
-int get_argc(char **args)
-{
-	int i;
-
-	for (i = 0; args[i]; i++)
-		;
-
-	return i;
-}
-
 int read_file_from_sockfd(int sockfd, char *path)
 {
 	int fd, n, size;
@@ -327,6 +239,17 @@ char *get_ipath(void)
 	free(uuid);
 
 	return ipath;
+}
+
+char *get_opath(char *ipath)
+{
+	char *opath;
+
+	opath = malloc(strlen(ipath) + 1);
+	strcpy(opath, ipath);
+	opath[strlen(ipath) - 1] = 'o';
+
+	return opath;
 }
 
 char *get_izpath(char *ipath)

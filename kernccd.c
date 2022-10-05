@@ -15,15 +15,18 @@
 #include <utils.h>
 #include "zpipe.h"
 
-static int native_cc(int connfd, char **args)
+static int native_cc(int connfd, char **args, char *ipath, char *opath)
 {
-	int wstatus, es, n;
+	int wstatus, es, n, argc;
 	pid_t pid;
 
 	pid = fork();
 
 	if (!pid) {
-		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
+//		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
+		argc = get_argc(args);
+		args[argc - 1] = ipath;
+		args[argc - 2] = opath;
 		execvp(args[0], args);
 	}
 
@@ -43,47 +46,18 @@ static int native_cc(int connfd, char **args)
 	return 0;
 }
 
-char *get_cmd(int connfd)
-{
-	char *cmd, *full_cmd, *opath, *ipath;
-
-	cmd = read_to_str(connfd);
-	if (IS_ERR(cmd))
-		return ERR_PTR(-EIO);
-
-	ipath = get_ipath();
-
-	opath = malloc(strlen(ipath) + 1);
-	strcpy(opath, ipath);
-	opath[strlen(ipath) - 1] = 'o';
-
-	full_cmd = malloc(strlen(cmd) + 1 + strlen(opath) + 1 + strlen(ipath) + 1);
-	strcpy(full_cmd, cmd);
-	strcat(full_cmd, " ");
-	strcat(full_cmd, opath);
-	strcat(full_cmd, " ");
-	strcat(full_cmd, ipath);
-
-	free(cmd);
-	free(ipath);
-	free(opath);
-
-	return full_cmd;
-}
-
 static void *cc_thread(void *arg)
 {
-	int connfd = *((int *)arg), i, argc, len, ret;
+	int connfd = *((int *)arg);
 	char *cmd, **args, *opath, *ipath, *izpath;
 
-	cmd = get_cmd(connfd);
+	cmd = read_to_str(connfd);
 	if (IS_ERR(cmd))
 		goto cmd_error;
 
 	args = get_args(cmd);
-	argc = get_argc(args);
-	ipath = args[argc - 1];
-	opath = args[argc - 2];
+	ipath = get_ipath();
+	opath = get_opath(ipath);
 	izpath = get_izpath(ipath);
 
 	if (read_file_from_sockfd(connfd, izpath))
@@ -92,20 +66,22 @@ static void *cc_thread(void *arg)
 	if (decompression(izpath, ipath))
 		goto error;
 
-	if (native_cc(connfd, args))
+	if (native_cc(connfd, args, ipath, opath))
 		goto error;
 
 	write_file_to_sockfd(connfd, opath);
 
-error:
 	remove(ipath);
 	remove(izpath);
 	remove(opath);
+error:
+	free_args(args);
+	free(ipath);
+	free(opath);
 	free(izpath);
-	for (i = 0; args[i]; i++)
-		free(args[i]);
 	free(args);
 	free(cmd);
+
 cmd_error:
 	free(arg);
 	close(connfd);
