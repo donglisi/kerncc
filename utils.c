@@ -56,6 +56,7 @@ void free_args(char **args)
 
 	for (i = 0; args[i]; i++)
 		free(args[i]);
+	free(args);
 }
 
 char **argc_argv_to_args(int argc, char **argv)
@@ -150,8 +151,10 @@ char *read_to_str(int fd)
 		loc += n;
 		len -= n;
 	}
-	if (n < 0)
+	if (n < 0) {
+		free(str);
 		return ERR_PTR(-EIO);
+	}
 
 	return str;
 }

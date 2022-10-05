@@ -162,8 +162,8 @@ static int remote_cc(int argc, char **argv)
 error:
 	remove(ipath);
 	remove(izpath);
-	free(izpath);
 	free(ipath);
+	free(izpath);
 	free(cmd);
 
 socket_error:

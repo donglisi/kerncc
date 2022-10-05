@@ -24,9 +24,11 @@ static int native_cc(int connfd, char **args, char *ipath, char *opath)
 
 	if (!pid) {
 		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
+
 		argc = get_argc(args);
 		args[argc - 1] = ipath;
 		args[argc - 2] = opath;
+
 		execvp(args[0], args);
 	}
 
@@ -75,11 +77,10 @@ error:
 	remove(ipath);
 	remove(izpath);
 	remove(opath);
-	free_args(args);
 	free(ipath);
 	free(opath);
 	free(izpath);
-	free(args);
+	free_args(args);
 	free(cmd);
 
 cmd_error:
