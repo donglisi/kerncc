@@ -37,7 +37,7 @@ static void __attribute__ ((constructor)) __parse_env(void)
 
 static char *get_cmd(int argc, char **argv)
 {
-	int i, loc, size;
+	int i, size;
 	char *cmd;
 
 	size = strlen(cc) + 1;
@@ -46,14 +46,12 @@ static char *get_cmd(int argc, char **argv)
 
 	cmd = malloc(size);
 	strcpy(cmd, cc);
-	loc = strlen(cc);
-	cmd[loc++] = ' ';
+	strcat(cmd, " ");
 	for (i = 1; i < argc; i++) {
-		strcpy(&cmd[loc], argv[i]);
-		loc += strlen(argv[i]);
-		cmd[loc++] = ' ';
+		strcat(cmd, argv[i]);
+		if (i < argc - 1)
+			strcat(cmd, " ");
 	}
-	cmd[size - 1] = 0;
 
 	return cmd;
 }
@@ -99,74 +97,79 @@ static int get_sockfd(void)
 
 static int native_cpp(int argc, char **argv, char *ipath)
 {
-	int wstatus, es;
+	int wstatus;
 	pid_t pid;
 	char **args;
 
 	pid = fork();
 	if (!pid) {
-		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
-
 		args = argc_argv_to_args(argc, argv);
-		args[0] = "cpp";
+		args[0] = "/usr/bin/cpp";
 		args[argc - 4][1] = 'E';
 		args[argc - 2] = ipath;
 
 		execvp(args[0], args);
 	}
 
-	waitpid(pid, &wstatus, 0);
-	WIFEXITED(wstatus);
-	es = WEXITSTATUS(wstatus);
-
-	/* if compile faile */
-	if (es) {
-		print_cpath(args);
-		return -1;
-	}
+	wait(&wstatus);
 
 	return 0;
 }
 
 static int remote_cc(int argc, char **argv)
 {
-	int sockfd, n, es = 1;
+	int sockfd, n, es = 1, ret = 0;
 	char *cmd, *ipath, *izpath;
 
 	sockfd = get_sockfd();
-	if (sockfd == -1)
-		return native_cc(argc, argv);
+	if (sockfd == -1) {
+		ret = native_cc(argc, argv);
+		goto socket_error;
+	}
 
 	cmd = get_cmd(argc, argv);
-	if (write_from_str(sockfd, cmd))
-		return native_cc(argc, argv);
-
 	ipath = get_ipath();
-	if (native_cpp(argc, argv, ipath))
-		return native_cc(argc, argv);
-
 	izpath = get_izpath(ipath);
-	if (compression(ipath, izpath))
-		return native_cc(argc, argv);
+	if (write_from_str(sockfd, cmd)) {
+		ret = native_cc(argc, argv);
+		goto error;
+	}
 
-	if (write_file_to_sockfd(sockfd, izpath))
-		return native_cc(argc, argv);
+	if (native_cpp(argc, argv, ipath)) {
+		ret = native_cc(argc, argv);
+		goto error;
+	}
+
+	if (compression(ipath, izpath)) {
+		ret = native_cc(argc, argv);
+		goto error;
+	}
+
+	if (write_file_to_sockfd(sockfd, izpath)) {
+		ret = native_cc(argc, argv);
+		goto error;
+	}
 
 	n = read(sockfd, &es, sizeof(int));
-	if (n < 0 || es)
-		return native_cc(argc, argv);
+	if (n < 0 || es) {
+		ret = native_cc(argc, argv);
+		goto error;
+	}
 
 	if (read_file_from_sockfd(sockfd, argv[argc - 2]))
-		return native_cc(argc, argv);
+		ret = native_cc(argc, argv);
 
+error:
 	remove(ipath);
 	remove(izpath);
-	free(ipath);
 	free(izpath);
+	free(ipath);
 	free(cmd);
+
+socket_error:
 	close(sockfd);
 
-	return 0;
+	return ret;
 }
 
 static int native_cc(int argc, char **argv)

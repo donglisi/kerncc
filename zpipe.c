@@ -183,9 +183,6 @@ int compression(char *path, char *zpath)
 	file = fopen(path, "r");
 	zfile = fopen(zpath, "w");
 	ret = def(file, zfile, Z_DEFAULT_COMPRESSION);
-	if (ret != Z_OK)
-		zerr(ret);
-
 	fclose(file);
 	fclose(zfile);
 
@@ -200,9 +197,6 @@ int decompression(char *zpath, char *path)
 	zfile = fopen(zpath, "r");
 	file = fopen(path, "w");
 	ret = inf(zfile, file);
-	if (ret != Z_OK)
-		zerr(ret);
-
 	fclose(file);
 	fclose(zfile);
 

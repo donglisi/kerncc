@@ -23,7 +23,7 @@ static int native_cc(int connfd, char **args, char *ipath, char *opath)
 	pid = fork();
 
 	if (!pid) {
-//		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
+		dup2(open("/dev/null", O_WRONLY, 0644), STDERR_FILENO);
 		argc = get_argc(args);
 		args[argc - 1] = ipath;
 		args[argc - 2] = opath;
@@ -39,7 +39,7 @@ static int native_cc(int connfd, char **args, char *ipath, char *opath)
 
 	/* if compile faile */
 	if (es) {
-		print_args(args);
+		print_cpath(args);
 		return -1;
 	}
 
@@ -71,10 +71,10 @@ static void *cc_thread(void *arg)
 
 	write_file_to_sockfd(connfd, opath);
 
+error:
 	remove(ipath);
 	remove(izpath);
 	remove(opath);
-error:
 	free_args(args);
 	free(ipath);
 	free(opath);
