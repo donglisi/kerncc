@@ -18,19 +18,13 @@
 #include <utils.h>
 #include "zpipe.h"
 
-static char gcc[] = "gcc";
-static char *cc;
+static char cc[] = "/usr/bin/gcc";
 static char server_ip[] = "192.168.1.2";
 static int value_size = 1000;
 static int balance = 50;
 
 static void __attribute__ ((constructor)) __parse_env(void)
 {
-	if (getenv("KERNCC_CC"))
-		cc = getenv("KERNCC_CC");
-	else
-		cc = gcc;
-
 	if (getenv("KERNCC_IP"))
 		strcpy(server_ip, getenv("KERNCC_IP"));
 
@@ -165,10 +159,12 @@ static int remote_cc(int argc, char **argv)
 	if (read_file_from_sockfd(sockfd, argv[argc - 2]))
 		return native_cc(argc, argv);
 
-	free(cmd);
-	close(sockfd);
 	remove(ipath);
 	remove(izpath);
+	free(ipath);
+	free(izpath);
+	free(cmd);
+	close(sockfd);
 
 	return 0;
 }

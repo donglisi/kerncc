@@ -312,7 +312,7 @@ int write_file_to_sockfd(int sockfd, char *path)
 char *get_ipath(void)
 {
 	int fd, uuid_len = 37;
-	char tmp[] = "/dev/shm/kerncc-", *uuid, *ipath;
+	char tmp[] = "/tmp/kerncc-", *uuid, *ipath;
 
 	uuid = malloc(uuid_len);
 	fd = open("/proc/sys/kernel/random/uuid", O_RDONLY);
