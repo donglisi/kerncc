@@ -19,14 +19,18 @@
 #include "zpipe.h"
 
 static char cc[] = "/usr/bin/gcc";
-static char server_ip[] = "192.168.1.2";
+static char default_ip[] = "192.168.1.2";
+static char *server_ip;
 static int value_size = 1000;
 static int balance = 50;
+static char *ipath, *izpath;
 
 static void __attribute__ ((constructor)) __parse_env(void)
 {
 	if (getenv("KERNCC_IP"))
-		strcpy(server_ip, getenv("KERNCC_IP"));
+		server_ip = getenv("KERNCC_IP");
+	else
+		server_ip = default_ip;
 
 	if (getenv("KERNCC_SIZE"))
 		value_size = atoi(getenv("KERNCC_SIZE"));
@@ -61,15 +65,20 @@ static int native_cc(int argc, char **argv);
 
 static bool need_remote_cc(int argc, char **argv)
 {
-	if (check_is_cc(argc, argv)) {
-		if (get_file_size(argv[argc - 1]) > value_size) {
-			srand(time(NULL) + getpid());
-			if (rand() % 100 > balance)
-				return true;
-		}
-	}
+	int size;
 
-	return false;
+	if (!check_is_cc(argc, argv))
+		return false;
+
+	size = get_file_size(argv[argc - 1]);
+	if (size < value_size)
+		return false;
+
+	srand(time(NULL) + getpid());
+	if (rand() % 100 < balance)
+		return false;
+
+	return true;
 }
 
 static int get_sockfd(void)
@@ -95,7 +104,7 @@ static int get_sockfd(void)
 	return sockfd;
 }
 
-static int native_cpp(int argc, char **argv, char *ipath)
+static int native_cpp(int argc, char **argv)
 {
 	int wstatus;
 	pid_t pid;
@@ -116,10 +125,17 @@ static int native_cpp(int argc, char **argv, char *ipath)
 	return 0;
 }
 
+void abort_exit(int sig)
+{
+	remove(ipath);
+	remove(izpath);
+	exit(1);
+}
+
 static int remote_cc(int argc, char **argv)
 {
 	int sockfd, n, es = 1, ret = 0;
-	char *cmd, *ipath, *izpath;
+	char *cmd;
 
 	sockfd = get_sockfd();
 	if (sockfd == -1) {
@@ -127,15 +143,20 @@ static int remote_cc(int argc, char **argv)
 		goto socket_error;
 	}
 
-	cmd = get_cmd(argc, argv);
 	ipath = get_ipath();
 	izpath = get_izpath(ipath);
+
+	signal(SIGINT, abort_exit);
+	signal(SIGTERM, abort_exit);
+	signal(SIGKILL, abort_exit);
+
+	cmd = get_cmd(argc, argv);
 	if (write_from_str(sockfd, cmd)) {
 		ret = native_cc(argc, argv);
 		goto error;
 	}
 
-	if (native_cpp(argc, argv, ipath)) {
+	if (native_cpp(argc, argv)) {
 		ret = native_cc(argc, argv);
 		goto error;
 	}
