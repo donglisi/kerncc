@@ -43,7 +43,7 @@ static void __attribute__ ((constructor)) __parse_env(void)
 
 static char *get_cmd(int argc, char **argv)
 {
-	int i, loc, size;
+	int i, size;
 	char *cmd;
 
 	size = strlen(cc) + 1;
@@ -52,14 +52,12 @@ static char *get_cmd(int argc, char **argv)
 
 	cmd = malloc(size);
 	strcpy(cmd, cc);
-	loc = strlen(cc);
-	cmd[loc++] = ' ';
+	strcat(cmd, " ");
 	for (i = 1; i < argc; i++) {
-		strcpy(&cmd[loc], argv[i]);
-		loc += strlen(argv[i]);
-		cmd[loc++] = ' ';
+		strcat(cmd, argv[i]);
+		if (i < argc - 1)
+			strcat(cmd, " ");
 	}
-	cmd[size - 1] = 0;
 
 	return cmd;
 }
