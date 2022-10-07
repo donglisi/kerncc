@@ -15,9 +15,10 @@
 
 #include <utils.h>
 
-static char gcc[] = "gcc";
+static char gcc[] = "/usr/bin/gcc";
 static char *cc;
-static char server_ip[] = "192.168.1.2";
+static char default_ip[] = "192.168.1.2";
+static char *server_ip;
 static int value_size = 1000;
 static int balance = 50;
 
@@ -29,7 +30,9 @@ static void __attribute__ ((constructor)) __parse_env(void)
 		cc = gcc;
 
 	if (getenv("KERNCC_IP"))
-		strcpy(server_ip, getenv("KERNCC_IP"));
+		server_ip = getenv("KERNCC_IP");
+	else
+		server_ip = default_ip;
 
 	if (getenv("KERNCC_SIZE"))
 		value_size = atoi(getenv("KERNCC_SIZE"));
