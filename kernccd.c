@@ -41,29 +41,6 @@ static int native_cc(int connfd, char **args)
 	return 0;
 }
 
-static int write_file_to_client(int connfd, char *path)
-{
-	int fd, size, rn, wn;
-	char buf[BUFSIZ];
-
-	size = get_file_size(path);
-	if (write(connfd, &size, sizeof(int)) != sizeof(int))
-		return -1;
-
-	fd = open(path, O_RDONLY);
-	while ((rn = read(fd, buf, BUFSIZ)) > 0) {
-		size = rn;
-		while ((wn = write(connfd, &buf[rn - size], size)) > 0) {
-			if (wn < 0)
-				return -1;
-			size -= wn;
-		}
-	}
-	close(fd);
-
-	return 0;
-}
-
 static void *cc_thread(void *arg)
 {
 	int connfd = *((int *)arg), i, fd, argc;
@@ -77,6 +54,7 @@ static void *cc_thread(void *arg)
 	cmd = read_to_str(connfd);
 	if (IS_ERR(cmd))
 		return 0;
+
 	args = get_args(cmd);
 	argc = get_argc(args);
 	opath = args[argc - 2];
@@ -87,11 +65,11 @@ static void *cc_thread(void *arg)
 	if (native_cc(connfd, args))
 		goto error;
 
-	if (write_file_to_client(connfd, opath))
+	if (write_file_to_sockfd(connfd, opath))
 		goto error;
 
 	get_dpath(args, &dpath);
-	write_file_to_client(connfd, dpath);
+	write_file_to_sockfd(connfd, dpath);
 	free(dpath);
 
 error:

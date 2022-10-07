@@ -106,28 +106,6 @@ static int get_sockfd(void)
 	return sockfd;
 }
 
-static int read_file_from_server(int sockfd, char *path)
-{
-	int fd, n, size;
-	char buf[BUFSIZ];
-
-	n = read(sockfd, &size, sizeof(int));
-	if (n < 0)
-		return -1;
-
-	fd = open(path, O_CREAT | O_WRONLY, 0644);
-	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
-		if (n < 0)
-			return -1;
-		size -= n;
-		if (write(fd, buf, n) != n)
-			return -1;
-	}
-	close(fd);
-
-	return 0;
-}
-
 static int remote_cc(int argc, char **argv)
 {
 	int sockfd, n, es = 1;
@@ -151,11 +129,11 @@ static int remote_cc(int argc, char **argv)
 		return native_cc(argc, argv);
 
 	opath = argv[argc - 2];
-	if (read_file_from_server(sockfd, opath))
+	if (read_file_from_sockfd(sockfd, opath))
 		return native_cc(argc, argv);
 
 	get_dpath(args, &dpath);
-	if (read_file_from_server(sockfd, dpath))
+	if (read_file_from_sockfd(sockfd, dpath))
 		return native_cc(argc, argv);
 	free(dpath);
 

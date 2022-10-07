@@ -163,8 +163,10 @@ char *read_to_str(int fd)
 		loc += n;
 		len -= n;
 	}
-	if (n < 0)
+	if (n < 0) {
+		free(str);
 		return ERR_PTR(-EIO);
+	}
 
 	return str;
 }
@@ -189,22 +191,47 @@ int write_from_str(int fd, char *str)
 	return 0;
 }
 
-int read_to_fd(int infd, int outfd)
+int read_file_from_sockfd(int sockfd, char *path)
 {
-	int n, size;
+	int fd, n, size;
 	char buf[BUFSIZ];
 
-	n = read(infd, &size, sizeof(int));
+	n = read(sockfd, &size, sizeof(int));
 	if (n < 0)
 		return -1;
 
-	while ((n = read(infd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
+	fd = open(path, O_CREAT | O_WRONLY, 0644);
+	while ((n = read(sockfd, buf, BUFSIZ < size ? BUFSIZ : size)) > 0) {
 		if (n < 0)
 			return -1;
 		size -= n;
-		if (write(outfd, buf, n) != n)
-			printf("write error %d\n", n);
+		if (write(fd, buf, n) != n)
+			return -1;
 	}
+	close(fd);
+
+	return 0;
+}
+
+int write_file_to_sockfd(int sockfd, char *path)
+{
+	int fd, size, rn, wn;
+	char buf[BUFSIZ];
+
+	size = get_file_size(path);
+	if (write(sockfd, &size, sizeof(int)) != sizeof(int))
+		return -1;
+
+	fd = open(path, O_RDONLY);
+	while ((rn = read(fd, buf, BUFSIZ)) > 0) {
+		size = rn;
+		while ((wn = write(sockfd, &buf[rn - size], size)) > 0) {
+			if (wn < 0)
+				return -1;
+			size -= wn;
+		}
+	}
+	close(fd);
 
 	return 0;
 }
