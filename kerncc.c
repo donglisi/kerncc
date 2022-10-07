@@ -18,7 +18,8 @@
 #include <utils.h>
 #include "zpipe.h"
 
-static char cc[] = "/usr/bin/gcc";
+static char gcc[] = "/usr/bin/gcc";
+static char *cc;
 static char default_ip[] = "192.168.1.2";
 static char *server_ip;
 static int value_size = 1000;
@@ -27,6 +28,11 @@ static char *ipath, *izpath;
 
 static void __attribute__ ((constructor)) __parse_env(void)
 {
+	if (getenv("KERNCC_CC"))
+		cc = getenv("KERNCC_CC");
+	else
+		cc = gcc;
+
 	if (getenv("KERNCC_IP"))
 		server_ip = getenv("KERNCC_IP");
 	else
