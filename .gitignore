@@ -5,3 +5,6 @@ kernccd
 kernccd.o
 utils.o
 zpipe.o
+GPATH
+GRTAGS
+GTAGS

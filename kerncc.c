@@ -69,15 +69,20 @@ static int native_cc(int argc, char **argv);
 
 static bool need_remote_cc(int argc, char **argv)
 {
-	if (check_is_cc(argc, argv)) {
-		if (get_file_size(argv[argc - 1]) > value_size) {
-			srand(time(NULL) + getpid());
-			if (rand() % 100 > balance)
-				return true;
-		}
-	}
+	int size;
 
-	return false;
+	if (!check_is_cc(argc, argv))
+		return false;
+
+	size = get_file_size(argv[argc - 1]);
+	if (size < value_size)
+		return false;
+
+	srand(time(NULL) + getpid());
+	if (rand() % 100 < balance)
+		return false;
+
+	return true;
 }
 
 static int get_sockfd(void)
