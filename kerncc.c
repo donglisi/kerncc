@@ -91,6 +91,7 @@ static int get_sockfd(void)
 {
 	int sockfd;
 	struct sockaddr_in serv_addr;
+	struct timeval timeout;
 
 	signal(SIGPIPE, SIG_IGN);
 
@@ -102,6 +103,12 @@ static int get_sockfd(void)
 	serv_addr.sin_port = htons(5000);
 
 	if (inet_pton(AF_INET, server_ip, &serv_addr.sin_addr) <= 0)
+		return -1;
+
+	timeout.tv_sec = 60;
+	timeout.tv_usec = 0;
+
+	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof timeout) < 0)
 		return -1;
 
 	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
